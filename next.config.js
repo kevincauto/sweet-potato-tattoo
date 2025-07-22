@@ -6,6 +6,18 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.blob.vercel-storage.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'scontent.cdninstagram.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'instagram.f**.cdninstagram.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
     ],
   },
 };
