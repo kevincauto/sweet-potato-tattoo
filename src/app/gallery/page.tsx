@@ -6,7 +6,7 @@ export const metadata = {
 };
 
 export default async function GalleryPage() {
-  const imageUrls = await kv.lrange('images', 0, -1);
+  const imageUrls = await kv.lrange('gallery-images', 0, -1);
 
   return (
     <main className="container mx-auto p-4">
