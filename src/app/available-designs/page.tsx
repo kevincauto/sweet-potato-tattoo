@@ -1,18 +1,22 @@
 import { kv } from '@vercel/kv';
 import Image from 'next/image';
 
-export default async function WorkPage() {
+export const metadata = {
+  title: 'Available Designs',
+};
+
+export default async function AvailableDesignsPage() {
   const imageUrls = await kv.lrange('images', 0, -1);
 
   return (
     <main className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold text-center my-8">Work</h1>
+      <h1 className="text-4xl font-bold text-center my-8">Available Designs</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {imageUrls.map((url, index) => (
           <div key={index} className="w-full h-auto">
             <Image
               src={url as string}
-              alt={`Tattoo example ${index + 1}`}
+              alt={`Design ${index + 1}`}
               width={600}
               height={800}
               className="rounded-lg object-cover w-full h-full"

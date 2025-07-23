@@ -9,8 +9,8 @@ export default function Navbar() {
         </div>
         <ul className="flex gap-8">
           <li>
-            <Link href="/work" className="hover:underline">
-              Work
+            <Link href="/available-designs" className="hover:underline">
+              Available Designs
             </Link>
           </li>
           <li>
