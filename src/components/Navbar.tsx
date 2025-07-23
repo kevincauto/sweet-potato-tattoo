@@ -9,13 +9,18 @@ export default function Navbar() {
         </div>
         <ul className="flex gap-8">
           <li>
-            <Link href="/available-designs" className="hover:underline">
-              Available Designs
+            <Link href="/available-flash" className="hover:underline">
+              Available Flash
             </Link>
           </li>
           <li>
-            <Link href="/info-and-booking" className="hover:underline">
-              Info & Booking
+            <Link href="/booking-and-availability" className="hover:underline">
+              Booking & Availability
+            </Link>
+          </li>
+          <li>
+            <Link href="/gallery" className="hover:underline">
+              Gallery
             </Link>
           </li>
           <li>
