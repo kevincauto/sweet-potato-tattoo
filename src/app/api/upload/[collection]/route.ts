@@ -13,7 +13,10 @@ export async function POST(request: NextRequest, { params }: { params: { collect
   if (!filename || !request.body) {
     return NextResponse.json({ message: 'No file to upload.' }, { status: 400 });
   }
-  const blob = await put(filename, request.body, { access: 'public' });
+  const blob = await put(filename, request.body, {
+    access: 'public',
+    allowOverwrite: true, // Allow overwriting files with the same name
+  });
   await kv.lpush(`${collection}-images`, blob.url);
   return NextResponse.json(blob);
 }
@@ -30,7 +33,6 @@ export async function GET(request: NextRequest, { params }: { params: { collecti
     return NextResponse.json({ blobs: [] });
   }
 
-  // Fetch all blobs and filter them by the URLs in our KV list.
   const { blobs } = await list();
   const collectionBlobs = blobs.filter((blob) => urls.includes(blob.url));
 

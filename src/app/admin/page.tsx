@@ -72,7 +72,9 @@ export default function AdminPage() {
               const newBlob = (await response.json()) as PutBlobResult;
               setBlob(newBlob);
             } else {
-              console.error('Upload failed');
+              const errorText = await response.text();
+              console.error('Upload failed:', errorText);
+              alert(`Upload failed: ${errorText}`); // Also show an alert to make it obvious
             }
           }
 
