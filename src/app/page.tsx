@@ -23,8 +23,8 @@ export default function Home() {
         const { error } = await res.json();
         setMsg(error || "Something went wrong.");
       }
-    } catch (err: any) {
-      setMsg(err.message);
+    } catch (err: unknown) {
+      setMsg((err as Error).message);
     }
   };
 
