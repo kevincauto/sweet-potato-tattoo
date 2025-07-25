@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type {
   PutBlobResult,
   ListBlobResult,
@@ -13,7 +13,7 @@ export default function AdminPage() {
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   const [images, setImages] = useState<ListBlobResult['blobs']>([]);
 
-  async function fetchImages(col: 'flash' | 'gallery' = collection) {
+  const fetchImages = useCallback(async (col: 'flash' | 'gallery') => {
     const response = await fetch(`/api/upload/${col}`);
     if (response.ok) {
       const data = (await response.json()) as ListBlobResult;
@@ -21,11 +21,11 @@ export default function AdminPage() {
     } else {
       setImages([]); // Clear images on error or if collection is empty
     }
-  }
+  }, []);
 
   useEffect(() => {
     fetchImages(collection);
-  }, [collection]);
+  }, [collection, fetchImages]);
 
   async function handleDelete(url: string) {
     await fetch(`/api/upload/${collection}?url=${encodeURIComponent(url)}`, {
