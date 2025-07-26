@@ -16,12 +16,10 @@ export default function Footer() {
             </Link>
           </li>
           <li>
-            <Link href="#" className="hover:underline">
-              Facebook
-            </Link>
-          </li>
-          <li>
-            <Link href="#" className="hover:underline">
+            <Link
+              href="mailto:sweetpotatotattoo@gmail.com"
+              className="hover:underline"
+            >
               Email
             </Link>
           </li>
