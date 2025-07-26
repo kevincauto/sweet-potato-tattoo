@@ -6,7 +6,12 @@ export default function Footer() {
       <div className="container mx-auto flex justify-center items-center">
         <ul className="flex gap-8">
           <li>
-            <Link href="#" className="hover:underline">
+            <Link
+              href="https://www.instagram.com/sweetpotatotat"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+            >
               Instagram
             </Link>
           </li>
