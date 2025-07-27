@@ -1,23 +1,21 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import type {
-  PutBlobResult,
-  ListBlobResult,
-  ListBlobResultBlob,
-} from '@vercel/blob';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import type { PutBlobResult } from '@vercel/blob';
 import Image from 'next/image';
 
 export default function AdminPage() {
   const [collection, setCollection] = useState<'flash' | 'gallery'>('flash');
+  const fileRef = useRef<HTMLInputElement>(null);
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
-  const [images, setImages] = useState<ListBlobResult['blobs']>([]);
+  interface ImgItem { url: string; caption?: string }
+  const [images, setImages] = useState<ImgItem[]>([]);
 
   const fetchImages = useCallback(async (col: 'flash' | 'gallery') => {
     const response = await fetch(`/api/upload/${col}`);
     if (response.ok) {
-      const data = (await response.json()) as ListBlobResult;
-      setImages(data.blobs);
+      const data = (await response.json()) as { items: ImgItem[] };
+      setImages(data.items);
     } else {
       setImages([]); // Clear images on error or if collection is empty
     }
@@ -56,12 +54,16 @@ export default function AdminPage() {
         onSubmit={async (event) => {
           event.preventDefault();
 
-          const files = (event.target as HTMLFormElement).file.files as FileList;
+          const form = event.target as HTMLFormElement;
+          const files = form.file.files as FileList;
+          const captionInput = form.caption as HTMLInputElement;
+          const caption = captionInput.value.trim();
+
           if (!files || files.length === 0) return;
 
           for (const file of Array.from(files)) {
             const response = await fetch(
-              `/api/upload/${collection}?filename=${encodeURIComponent(file.name)}`,
+              `/api/upload/${collection}?filename=${encodeURIComponent(file.name)}&caption=${encodeURIComponent(caption)}`,
               {
                 method: 'POST',
                 body: file,
@@ -88,8 +90,25 @@ export default function AdminPage() {
           multiple
           required
           className="border rounded-lg p-2 mr-2"
+          ref={fileRef}
         />
-        <button type="submit" className="bg-blue-500 text-white p-2 rounded-lg">
+        <input
+          name="caption"
+          type="text"
+          placeholder="Caption (optional)"
+          className="border rounded-lg p-2 mr-2 flex-1"
+        />
+        <button
+          type="submit"
+          className="bg-blue-500 text-white p-2 rounded-lg"
+          onClick={(e) => {
+            const files = fileRef.current?.files;
+            if (!files || files.length === 0) {
+              e.preventDefault();
+              fileRef.current?.click();
+            }
+          }}
+        >
           Upload
         </button>
       </form>
@@ -109,15 +128,18 @@ export default function AdminPage() {
 
       <h2 className="text-2xl font-bold mb-4">{collection === 'flash' ? 'Available Flash Images' : 'Gallery Images'}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {images.map((image: ListBlobResultBlob) => (
-          <div key={image.pathname} className="relative">
+        {images.map((image) => (
+          <div key={image.url} className="relative flex flex-col items-center">
             <Image
               src={image.url}
-              alt={image.pathname}
+              alt={image.caption ?? 'image'}
               width={300}
               height={200}
               className="rounded-lg object-cover w-full h-full"
             />
+            {image.caption && image.caption.length > 0 && (
+              <p className="text-xs text-center mt-1">{image.caption}</p>
+            )}
             <button
               onClick={() => handleDelete(image.url)}
               className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"

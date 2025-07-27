@@ -15,6 +15,7 @@ export async function POST(request: Request, { params }: any) {
 
   const { searchParams } = new URL(request.url);
   const filename = searchParams.get('filename');
+  const caption = searchParams.get('caption');
   if (!filename || !request.body) {
     return NextResponse.json({ message: 'No file to upload.' }, { status: 400 });
   }
@@ -25,6 +26,9 @@ export async function POST(request: Request, { params }: any) {
   });
 
   await kv.lpush(`${collection}-images`, blob.url);
+  if (caption) {
+    await kv.hset('captions', { [blob.url]: caption });
+  }
   return NextResponse.json(blob);
 }
 
@@ -39,7 +43,15 @@ export async function GET(_: Request, { params }: any) {
 
   const { blobs } = await list();
   const collectionBlobs = blobs.filter((b) => urls.includes(b.url));
-  return NextResponse.json({ blobs: collectionBlobs });
+
+  const items = await Promise.all(
+    collectionBlobs.map(async (b) => {
+      const caption = (await kv.hget('captions', b.url)) as string | null;
+      return { url: b.url, caption: caption || '' };
+    })
+  );
+
+  return NextResponse.json({ items });
 }
 
 // ───────────────────────── DELETE /api/upload/:collection
