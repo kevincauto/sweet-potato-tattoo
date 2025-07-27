@@ -18,7 +18,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${playfairDisplay.variable} ${inter.variable} h-full`}
-    >
+      >
       <body className={`flex flex-col min-h-full font-sans`}>
         <Navbar />
         {children}

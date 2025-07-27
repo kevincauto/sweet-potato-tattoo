@@ -22,10 +22,10 @@ export default async function GalleryPage() {
               alt={`Gallery image ${index + 1}`}
               width={600}
               height={800}
-              className="rounded-lg object-cover w-full h-full"
+              className="rounded-lg object-cover w-full"
             />
             {captionsMap[url as string] && (
-              <p className="mt-1 text-sm text-center">{captionsMap[url as string]}</p>
+              <p className="mt-1 text-sm text-center whitespace-pre-line">{captionsMap[url as string]}</p>
             )}
           </div>
         ))}

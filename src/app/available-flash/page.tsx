@@ -26,10 +26,10 @@ export default async function AvailableFlashPage() {
               alt={`Flash ${index + 1}`}
               width={600}
               height={800}
-              className="rounded-lg object-cover w-full h-full"
+              className="rounded-lg object-cover w-full"
             />
             {captionsMap[url] && (
-              <p className="mt-1 text-sm text-center">{captionsMap[url] as string}</p>
+              <p className="mt-1 text-sm text-center whitespace-pre-line">{captionsMap[url] as string}</p>
             )}
           </div>
         ))}

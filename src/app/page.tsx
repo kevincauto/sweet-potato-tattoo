@@ -63,7 +63,7 @@ export default function Home() {
           className="rounded-lg"
           priority
         />
-      </div>
-    </main>
+        </div>
+      </main>
   );
 }

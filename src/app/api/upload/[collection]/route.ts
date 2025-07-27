@@ -54,6 +54,16 @@ export async function GET(_: Request, { params }: any) {
   return NextResponse.json({ items });
 }
 
+// ───────────────────────── PUT /api/upload/:collection?url=&caption=
+export async function PUT(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const url = searchParams.get('url');
+  const caption = searchParams.get('caption') || '';
+  if (!url) return NextResponse.json({ error: 'url required' }, { status: 400 });
+  await kv.hset('captions', { [url]: caption });
+  return NextResponse.json({ ok: true });
+}
+
 // ───────────────────────── DELETE /api/upload/:collection
 export async function DELETE(request: Request, { params }: any) {
   const { collection } = params;

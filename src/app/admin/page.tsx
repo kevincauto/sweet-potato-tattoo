@@ -10,6 +10,8 @@ export default function AdminPage() {
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   interface ImgItem { url: string; caption?: string }
   const [images, setImages] = useState<ImgItem[]>([]);
+  const [editingUrl, setEditingUrl] = useState<string | null>(null);
+  const [tempCaption, setTempCaption] = useState('');
 
   const fetchImages = useCallback(async (col: 'flash' | 'gallery') => {
     const response = await fetch(`/api/upload/${col}`);
@@ -135,10 +137,42 @@ export default function AdminPage() {
               alt={image.caption ?? 'image'}
               width={300}
               height={200}
-              className="rounded-lg object-cover w-full h-full"
+              className="rounded-lg object-cover w-full" 
             />
-            {image.caption && image.caption.length > 0 && (
-              <p className="text-xs text-center mt-1">{image.caption}</p>
+            {editingUrl === image.url ? (
+              <textarea
+                value={tempCaption}
+                rows={3}
+                autoFocus
+                onChange={(e) => setTempCaption(e.target.value)}
+                onBlur={() => {
+                  // save
+                  fetch(
+                    `/api/upload/${collection}?url=${encodeURIComponent(image.url)}&caption=${encodeURIComponent(
+                      tempCaption
+                    )}`,
+                    { method: 'PUT' }
+                  );
+                  setImages((imgs) =>
+                    imgs.map((it) =>
+                      it.url === image.url ? { ...it, caption: tempCaption } : it
+                    )
+                  );
+                  setEditingUrl(null);
+                }}
+                className="text-xs w-full mt-1 bg-transparent border rounded p-1"
+              />
+            ) : (
+              <p
+                className="text-xs text-center mt-1 whitespace-pre-line cursor-pointer"
+                title={image.caption}
+                onClick={() => {
+                  setEditingUrl(image.url);
+                  setTempCaption(image.caption || '');
+                }}
+              >
+                {image.caption || 'Add caption'}
+              </p>
             )}
             <button
               onClick={() => handleDelete(image.url)}
