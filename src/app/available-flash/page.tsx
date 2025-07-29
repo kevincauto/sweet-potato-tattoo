@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { kv } from '@vercel/kv';
 import Image from 'next/image';
 
 export const metadata = {
@@ -7,29 +6,32 @@ export const metadata = {
 };
 
 export default async function AvailableFlashPage() {
-  let imageUrls = await kv.lrange('flash-images', 0, -1);
-  if (imageUrls.length === 0) {
-    imageUrls = await kv.lrange('images', 0, -1);
+  // Use the API route instead of directly querying KV to ensure consistency with admin
+  const response = await fetch('/api/upload/flash', {
+    cache: 'no-store' // Disable caching to get fresh data
+  });
+  
+  let items: { url: string; caption: string }[] = [];
+  if (response.ok) {
+    const data = await response.json();
+    items = data.items || [];
   }
-
-  const captionsRaw = (await kv.hgetall<any>('captions')) as Record<string, string> | null;
-  const captionsMap = captionsRaw ?? {};
 
   return (
     <main className="container mx-auto p-4">
       <h1 className="text-4xl font-bold text-center my-8">Available Flash</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {imageUrls.map((url, index) => (
+        {items.map((item, index) => (
           <div key={index} className="w-full h-auto flex flex-col items-center">
             <Image
-              src={url as string}
+              src={item.url}
               alt={`Flash ${index + 1}`}
               width={600}
               height={800}
               className="rounded-lg object-cover w-full"
             />
-            {captionsMap[url] && (
-              <p className="mt-1 text-sm text-center whitespace-pre-line">{captionsMap[url] as string}</p>
+            {item.caption && (
+              <p className="mt-1 text-sm text-center whitespace-pre-line">{item.caption}</p>
             )}
           </div>
         ))}
