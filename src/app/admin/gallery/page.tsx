@@ -5,7 +5,7 @@ import type { PutBlobResult } from '@vercel/blob';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export default function AdminPage() {
+export default function GalleryAdminPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   interface ImgItem { url: string; caption?: string }
@@ -14,7 +14,7 @@ export default function AdminPage() {
   const [tempCaption, setTempCaption] = useState('');
 
   const fetchImages = useCallback(async () => {
-    const response = await fetch('/api/upload/flash');
+    const response = await fetch('/api/upload/gallery');
     if (response.ok) {
       const data = (await response.json()) as { items: ImgItem[] };
       setImages(data.items);
@@ -28,7 +28,7 @@ export default function AdminPage() {
   }, [fetchImages]);
 
   async function handleDelete(url: string) {
-    await fetch(`/api/upload/flash?url=${encodeURIComponent(url)}`, {
+    await fetch(`/api/upload/gallery?url=${encodeURIComponent(url)}`, {
       method: 'DELETE',
     });
     fetchImages();
@@ -36,19 +36,19 @@ export default function AdminPage() {
 
   return (
     <main className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold text-center my-8">Admin</h1>
+      <h1 className="text-4xl font-bold text-center my-8">Gallery Admin</h1>
       
       {/* Navigation */}
       <div className="flex justify-center gap-4 mb-6">
         <Link 
           href="/admin" 
-          className="px-4 py-2 rounded-lg border bg-blue-500 text-white"
+          className="px-4 py-2 rounded-lg border bg-white text-black hover:bg-gray-100"
         >
           Available Flash
         </Link>
         <Link 
           href="/admin/gallery" 
-          className="px-4 py-2 rounded-lg border bg-white text-black hover:bg-gray-100"
+          className="px-4 py-2 rounded-lg border bg-blue-500 text-white"
         >
           Gallery
         </Link>
@@ -67,7 +67,7 @@ export default function AdminPage() {
 
           for (const file of Array.from(files)) {
             const response = await fetch(
-              `/api/upload/flash?filename=${encodeURIComponent(file.name)}&caption=${encodeURIComponent(caption)}`,
+              `/api/upload/gallery?filename=${encodeURIComponent(file.name)}&caption=${encodeURIComponent(caption)}`,
               {
                 method: 'POST',
                 body: file,
@@ -80,7 +80,7 @@ export default function AdminPage() {
             } else {
               const errorText = await response.text();
               console.error('Upload failed:', errorText);
-              alert(`Upload failed: ${errorText}`); // Also show an alert to make it obvious
+              alert(`Upload failed: ${errorText}`);
             }
           }
 
@@ -130,7 +130,7 @@ export default function AdminPage() {
         </div>
       )}
 
-      <h2 className="text-2xl font-bold mb-4">Available Flash Images</h2>
+      <h2 className="text-2xl font-bold mb-4">Gallery Images</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {images.map((image) => (
           <div key={image.url} className="relative flex flex-col items-center">
@@ -150,7 +150,7 @@ export default function AdminPage() {
                 onBlur={() => {
                   // save
                   fetch(
-                    `/api/upload/flash?url=${encodeURIComponent(image.url)}&caption=${encodeURIComponent(
+                    `/api/upload/gallery?url=${encodeURIComponent(image.url)}&caption=${encodeURIComponent(
                       tempCaption
                     )}`,
                     { method: 'PUT' }

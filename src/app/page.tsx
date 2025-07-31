@@ -1,69 +1,45 @@
-"use client";
+import { kv } from '@vercel/kv';
+import { list } from '@vercel/blob';
+import Image from 'next/image';
+import NewsletterSignup from './components/NewsletterSignup';
 
-import { useState } from "react";
-import Image from "next/image";
-
-export default function Home() {
-  const [email, setEmail] = useState("");
-  const [msg, setMsg] = useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setMsg(null);
-    try {
-      const res = await fetch("/api/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      if (res.ok) {
-        setMsg("Thanks! You'll hear from us soon.");
-        setEmail("");
-      } else {
-        const { error } = await res.json();
-        setMsg(error || "Something went wrong.");
-      }
-    } catch (err: unknown) {
-      setMsg((err as Error).message);
-    }
-  };
+export default async function Home() {
+  // Get gallery images
+  const imageUrls = await kv.lrange('gallery-images', 0, -1);
+  const { blobs } = await list();
+  const existingBlobs = blobs.filter((b) => imageUrls.includes(b.url));
+  const captionsRaw = (await kv.hgetall('captions')) as Record<string, string> | null;
+  const captionsMap = captionsRaw ?? {};
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center p-4">
-      <div className="w-full max-w-2xl text-center">
+      <div className="w-full max-w-6xl text-center">
         <h1 className="text-6xl font-serif mb-4">Sweet Potato Tattoo</h1>
-        {/* Signup form */}
-        <form
-          className="w-full max-w-md mx-auto mb-8 flex gap-2"
-          onSubmit={handleSubmit}
-        >
-          <input
-            name="email"
-            type="email"
-            placeholder="Enter your email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="flex-1 border rounded-lg p-2"
-          />
-          <button
-            type="submit"
-            className="bg-foreground text-background px-4 py-2 rounded-lg border"
-          >
-            Sign Up
-          </button>
-        </form>
-        {msg && <p className="mb-4 text-sm">{msg}</p>}
-        {/* Hero image */}
-        <Image
-          src="https://picsum.photos/seed/sweetpotato/1024/768"
-          alt="Placeholder image"
-          width={1024}
-          height={768}
-          className="rounded-lg"
-          priority
-        />
+        
+        {/* Newsletter signup */}
+        <NewsletterSignup />
+        
+        {/* Gallery section */}
+        <div className="mt-12">
+          <h2 className="text-3xl font-bold mb-6">Gallery</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {existingBlobs.map((blob, index) => (
+              <div key={index} className="w-full h-auto flex flex-col items-center">
+                <Image
+                  src={blob.url}
+                  alt={`Gallery image ${index + 1}`}
+                  width={400}
+                  height={500}
+                  className="rounded-lg object-cover w-full"
+                />
+                {captionsMap[blob.url] && (
+                  <p className="mt-1 text-sm text-center whitespace-pre-line">{captionsMap[blob.url]}</p>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
-      </main>
+      </div>
+    </main>
   );
 }

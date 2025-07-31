@@ -19,11 +19,6 @@ export default function Navbar() {
             </Link>
           </li>
           <li>
-            <Link href="/gallery" className="hover:underline">
-              Gallery
-            </Link>
-          </li>
-          <li>
             <Link href="/faq" className="hover:underline">
               FAQ
             </Link>
