@@ -46,7 +46,7 @@ export default function NewsletterSignup() {
           type="submit"
           className="bg-foreground text-background px-4 py-2 rounded-lg border"
         >
-          Sign Up
+          Newsletter Sign Up
         </button>
       </form>
       {msg && <p className="mb-4 text-sm">{msg}</p>}
