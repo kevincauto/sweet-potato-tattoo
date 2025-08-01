@@ -32,7 +32,7 @@ export default function QuestionsPage() {
                 </p>
                 
                 <p>
-                  For scheduling a touch-up, please email me at <a href="mailto:sweetpotatotattoo@gmail.com" className="text-[#7B894C] hover:underline">sweetpotatotattoo@gmail.com</a> with "touch-up" in the subject line. Let me know dates and times that work for you and attach a picture of the tattoo. I will then get back to you to work out a day/time.
+                  For scheduling a touch-up, please email me at <a href="mailto:sweetpotatotattoo@gmail.com" className="text-[#7B894C] hover:underline">sweetpotatotattoo@gmail.com</a> with &ldquo;touch-up&rdquo; in the subject line. Let me know dates and times that work for you and attach a picture of the tattoo. I will then get back to you to work out a day/time.
                 </p>
                 
                 <p>
@@ -44,7 +44,7 @@ export default function QuestionsPage() {
                 </p>
                 
                 <p>
-                  If you need to cancel or reschedule a touch-up, please let me know as soon as possible. Last minute cancellations or reschedulings are not fun, but understandable if you communicate them to me. No shows with zero communication are just unkind, so if you don't show up and don't communicate with me in a timely manner, I may choose not to work with you again.
+                  If you need to cancel or reschedule a touch-up, please let me know as soon as possible. Last minute cancellations or reschedulings are not fun, but understandable if you communicate them to me. No shows with zero communication are just unkind, so if you don&apos;t show up and don&apos;t communicate with me in a timely manner, I may choose not to work with you again.
                 </p>
               </div>
             </div>
