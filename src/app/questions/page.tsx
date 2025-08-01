@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export default function FAQPage() {
+export default function QuestionsPage() {
   const [openQuestion, setOpenQuestion] = useState<string | null>(null);
 
   const toggleQuestion = (questionId: string) => {
@@ -11,7 +11,7 @@ export default function FAQPage() {
 
   return (
     <main className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold text-center my-8 text-[#414141]">Frequently Asked Questions</h1>
+      <h1 className="text-4xl font-bold text-center my-8 text-[#414141]">Questions</h1>
       
       <div className="max-w-4xl mx-auto space-y-4">
         <div className="bg-white rounded-lg shadow-sm border">

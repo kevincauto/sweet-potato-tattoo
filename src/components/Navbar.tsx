@@ -9,12 +9,18 @@ export default function Navbar() {
           <h1 className="text-4xl font-light text-[#414141] mb-2">
             <Link href="/">Sweet Potato Tattoo</Link>
           </h1>
+          <div className="w-16 h-px bg-[#7B894C] mx-auto mb-2"></div>
           <p className="text-lg text-[#414141]">Handpoked Tattoos by Josey</p>
         </div>
         
         {/* Navigation */}
         <nav className="flex justify-center">
           <ul className="flex gap-8">
+            <li>
+              <Link href="/" className="hover:underline text-[#7B894C]">
+                Home
+              </Link>
+            </li>
             <li>
               <Link href="/available-flash" className="hover:underline text-[#7B894C]">
                 Available Flash
@@ -26,8 +32,8 @@ export default function Navbar() {
               </Link>
             </li>
             <li>
-              <Link href="/faq" className="hover:underline text-[#7B894C]">
-                FAQ
+              <Link href="/questions" className="hover:underline text-[#7B894C]">
+                Questions
               </Link>
             </li>
             <li>
