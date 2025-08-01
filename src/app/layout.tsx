@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { montserrat } from './fonts';
+import { montserrat, baskervville } from './fonts';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${montserrat.variable} h-full`}
+      className={`${montserrat.variable} ${baskervville.variable} h-full`}
       >
       <body className={`flex flex-col min-h-full font-montserrat font-light`}>
         <Navbar />
