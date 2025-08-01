@@ -7,6 +7,13 @@ import Footer from '@/components/Footer';
 export const metadata: Metadata = {
   title: 'Sweet Potato Tattoo',
   description: 'Custom tattoo studio',
+  icons: {
+    icon: [
+      { url: '/sweet-potato.png', type: 'image/png' },
+    ],
+    shortcut: '/sweet-potato.png',
+    apple: '/sweet-potato.png',
+  },
 };
 
 export default function RootLayout({
