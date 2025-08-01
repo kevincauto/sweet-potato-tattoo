@@ -19,6 +19,16 @@ export default function Navbar() {
             </Link>
           </li>
           <li>
+            <a 
+              href="https://form.jotform.com/250076675634159" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="hover:underline"
+            >
+              Consent Form
+            </a>
+          </li>
+          <li>
             <Link href="/admin" prefetch={false} className="hover:underline text-sm text-gray-500">
               Admin
             </Link>
