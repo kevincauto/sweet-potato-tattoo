@@ -14,7 +14,7 @@ export default async function Home() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center p-4">
       <div className="w-full max-w-6xl text-center">
-        <h1 className="text-6xl font-serif mb-2">Sweet Potato Tattoo</h1>
+        <h1 className="text-6xl font-light mb-2">Sweet Potato Tattoo</h1>
         <p className="text-xl text-gray-600 mb-8">Handpoked Tattoos by Josey</p>
         
         {/* Newsletter signup */}

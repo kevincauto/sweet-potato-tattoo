@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { playfairDisplay, inter } from './fonts';
+import { montserrat } from './fonts';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -17,9 +17,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${playfairDisplay.variable} ${inter.variable} h-full`}
+      className={`${montserrat.variable} h-full`}
       >
-      <body className={`flex flex-col min-h-full font-sans`}>
+      <body className={`flex flex-col min-h-full font-montserrat font-light`}>
         <Navbar />
         {children}
         <Footer />

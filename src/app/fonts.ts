@@ -1,11 +1,7 @@
-import { Playfair_Display, Inter } from 'next/font/google';
+import { Montserrat } from 'next/font/google';
 
-export const playfairDisplay = Playfair_Display({
+export const montserrat = Montserrat({
   subsets: ['latin'],
-  variable: '--font-playfair-display',
-});
-
-export const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
+  weight: ['300'], // Light weight
+  variable: '--font-montserrat',
 }); 
