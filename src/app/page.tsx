@@ -19,7 +19,7 @@ export default async function Home() {
         
         {/* Gallery section */}
         <div className="mt-12">
-          <h2 className="text-3xl font-baskervville mb-6 text-[#414141]">Gallery</h2>
+          <h2 className="text-3xl font-light mb-6 text-[#414141]">Gallery</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {existingBlobs.map((blob, index) => (
               <div key={index} className="w-full h-auto flex flex-col items-center">

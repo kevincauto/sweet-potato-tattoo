@@ -9,9 +9,7 @@ module.exports = {
     extend: {
       fontFamily: {
         montserrat: ['var(--font-montserrat)', 'sans-serif'],
-        baskervville: ['var(--font-baskervville)', 'serif'],
         sans: ['var(--font-montserrat)', 'sans-serif'],
-        serif: ['var(--font-baskervville)', 'serif'],
       },
     },
   },

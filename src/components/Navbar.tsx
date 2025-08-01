@@ -6,7 +6,7 @@ export default function Navbar() {
       <div className="container mx-auto">
         {/* Main title and subtitle */}
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-baskervville text-[#414141] mb-2">
+          <h1 className="text-3xl font-light text-[#414141] mb-2">
             <Link href="/">Sweet Potato Tattoo</Link>
           </h1>
           <div className="w-16 h-px bg-[#7B894C] mx-auto mb-2"></div>

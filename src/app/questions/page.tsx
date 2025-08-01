@@ -11,7 +11,7 @@ export default function QuestionsPage() {
 
   return (
     <main className="container mx-auto p-4">
-      <h1 className="text-4xl font-baskervville text-center my-8 text-[#414141]">Questions</h1>
+      <h1 className="text-4xl font-light text-center my-8 text-[#414141]">Questions</h1>
       
       <div className="max-w-4xl mx-auto space-y-4">
         <div className="bg-white rounded-lg shadow-sm border">
