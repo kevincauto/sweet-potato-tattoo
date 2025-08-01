@@ -14,15 +14,12 @@ export default async function Home() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center p-4">
       <div className="w-full max-w-6xl text-center">
-        <h1 className="text-6xl font-light mb-2">Sweet Potato Tattoo</h1>
-        <p className="text-xl text-gray-600 mb-8">Handpoked Tattoos by Josey</p>
-        
         {/* Newsletter signup */}
         <NewsletterSignup />
         
         {/* Gallery section */}
         <div className="mt-12">
-          <h2 className="text-3xl font-bold mb-6">Gallery</h2>
+          <h2 className="text-3xl font-bold mb-6 text-[#414141]">Gallery</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {existingBlobs.map((blob, index) => (
               <div key={index} className="w-full h-auto flex flex-col items-center">
@@ -34,7 +31,7 @@ export default async function Home() {
                   className="rounded-lg object-cover w-full"
                 />
                 {captionsMap[blob.url] && (
-                  <p className="mt-1 text-sm text-center whitespace-pre-line">{captionsMap[blob.url]}</p>
+                  <p className="mt-1 text-sm text-center whitespace-pre-line text-[#414141]">{captionsMap[blob.url]}</p>
                 )}
               </div>
             ))}

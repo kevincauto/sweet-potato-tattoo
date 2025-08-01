@@ -11,13 +11,13 @@ export default function FAQPage() {
 
   return (
     <main className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold text-center my-8">Frequently Asked Questions</h1>
+      <h1 className="text-4xl font-bold text-center my-8 text-[#414141]">Frequently Asked Questions</h1>
       
       <div className="max-w-4xl mx-auto space-y-4">
         <div className="bg-white rounded-lg shadow-sm border">
           <button
             onClick={() => toggleQuestion('touchups')}
-            className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors"
+            className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors text-[#414141]"
           >
             <h2 className="text-xl font-semibold">How do you handle touch-ups?</h2>
             <span className="text-2xl transition-transform duration-200">
@@ -26,13 +26,13 @@ export default function FAQPage() {
           </button>
           {openQuestion === 'touchups' && (
             <div className="px-6 pb-4">
-              <div className="text-gray-700 leading-relaxed space-y-4">
+              <div className="text-[#414141] leading-relaxed space-y-4">
                 <p>
                   Sometimes, for various reasons, ink falls out of a tattoo. It can happen during the healing process or over time, long after the tattoo has healed. If this happens, you can come back to me for a touch-up. During this appointment, I will fill in the places where your tattoo is missing ink.
                 </p>
                 
                 <p>
-                  For scheduling a touch-up, please email me at <a href="mailto:sweetpotatotattoo@gmail.com" className="text-blue-600 hover:underline">sweetpotatotattoo@gmail.com</a> with "touch-up" in the subject line. Let me know dates and times that work for you and attach a picture of the tattoo. I will then get back to you to work out a day/time.
+                  For scheduling a touch-up, please email me at <a href="mailto:sweetpotatotattoo@gmail.com" className="text-[#7B894C] hover:underline">sweetpotatotattoo@gmail.com</a> with "touch-up" in the subject line. Let me know dates and times that work for you and attach a picture of the tattoo. I will then get back to you to work out a day/time.
                 </p>
                 
                 <p>

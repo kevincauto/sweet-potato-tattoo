@@ -40,16 +40,16 @@ export default function NewsletterSignup() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="flex-1 border rounded-lg p-2"
+          className="flex-1 border rounded-lg p-2 text-[#414141] placeholder-gray-500"
         />
         <button
           type="submit"
-          className="bg-foreground text-background px-4 py-2 rounded-lg border"
+          className="bg-[#7B894C] text-white px-4 py-2 rounded-lg border hover:bg-[#6A7A3F] transition-colors"
         >
           Newsletter Sign Up
         </button>
       </form>
-      {msg && <p className="mb-4 text-sm">{msg}</p>}
+      {msg && <p className="mb-4 text-sm text-[#414141]">{msg}</p>}
     </>
   );
 } 
