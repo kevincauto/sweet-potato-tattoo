@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 export default function Navbar() {
@@ -10,9 +11,15 @@ export default function Navbar() {
     <header className="p-4">
       <div className="container mx-auto">
         {/* Main title and subtitle */}
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-light text-[#414141] mb-2">
+        <div className="text-center mb-12 mt-8">
+          <h1 className="text-3xl font-light text-[#414141] mb-2 flex items-center justify-center gap-2">
             <Link href="/">Sweet Potato Tattoo</Link>
+            <Image
+              src="/sweet-potato.png"
+              alt="Sweet Potato"
+              width={40}
+              height={40}
+            />
           </h1>
           <div className="w-16 h-px bg-[#7B894C] mx-auto mb-2"></div>
           <p className="text-lg text-[#414141]">Handpoked Tattoos by Josey</p>
@@ -78,19 +85,6 @@ export default function Navbar() {
               >
                 Consent Form
               </a>
-            </li>
-            <li>
-              <Link 
-                href="/admin" 
-                prefetch={false} 
-                className={`text-sm transition-colors ${
-                  pathname === "/admin" 
-                    ? "text-[#414141]" 
-                    : "text-gray-500 hover:text-[#414141]"
-                }`}
-              >
-                Admin
-              </Link>
             </li>
           </ul>
         </nav>
