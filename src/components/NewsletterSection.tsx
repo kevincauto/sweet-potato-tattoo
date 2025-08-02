@@ -40,17 +40,17 @@ export default function NewsletterSection() {
     <section className="relative py-12 px-4 mb-8 w-full min-h-[300px] overflow-hidden">
       {/* Background image using regular img tag */}
       <img
-        src="/spain-mountain.jpeg"
-        alt="Spain mountain background"
+        src="/berry.jpg"
+        alt="Berry background"
         className="absolute inset-0 w-full h-full object-cover"
       />
       
       {/* Content */}
       <div className="relative z-10 flex items-center justify-center min-h-[300px]">
         {/* Opaque white rectangle containing the signup form */}
-        <div className="bg-white bg-opacity-95 rounded-lg shadow-sm border max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl w-full mx-4 overflow-hidden">
+        <div className="bg-white bg-opacity-95 rounded-lg shadow-sm max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl w-full mx-4 overflow-hidden">
           {/* Top half - white background */}
-          <div className="bg-white p-6 text-center border-b">
+          <div className="bg-white p-6 text-center">
             <h2 className="text-xl sm:text-2xl font-light text-gray-800 mb-3">
               Stay in the Loop
             </h2>

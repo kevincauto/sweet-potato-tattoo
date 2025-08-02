@@ -14,12 +14,12 @@ export default function Navbar() {
         <div className="text-center mb-12 mt-8">
           <h1 className="text-3xl font-light text-[#414141] mb-2 flex items-center justify-center gap-2">
             <Link href="/">Sweet Potato Tattoo</Link>
-            <Image
+            {/* <Image
               src="/sweet-potato.png"
               alt="Sweet Potato"
               width={40}
               height={40}
-            />
+            /> */}
           </h1>
           <div className="w-16 h-px bg-[#7B894C] mx-auto mb-2"></div>
           <p className="text-lg text-[#414141]">Handpoked Tattoos by Josey</p>
