@@ -3,27 +3,60 @@ import Link from "next/link";
 export default function Footer() {
   return (
     <footer className="p-4">
-      <div className="container mx-auto flex justify-center items-center">
+      <div className="container mx-auto flex flex-col items-center gap-4">
         <ul className="flex gap-8">
           <li>
             <Link
               href="https://www.instagram.com/sweetpotatotat"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:underline"
+              className="hover:opacity-70 transition-opacity"
+              aria-label="Instagram"
             >
-              Instagram
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="mailto:sweetpotatotattoo@gmail.com"
-              className="hover:underline"
-            >
-              Email
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-[#414141]"
+              >
+                <rect
+                  x="2"
+                  y="2"
+                  width="20"
+                  height="20"
+                  rx="5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  fill="none"
+                />
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="4"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  fill="none"
+                />
+                <circle
+                  cx="17"
+                  cy="7"
+                  r="1"
+                  fill="currentColor"
+                />
+              </svg>
             </Link>
           </li>
         </ul>
+        <div>
+          <Link
+            href="mailto:sweetpotatotattoo@gmail.com"
+            className="hover:underline text-[#414141]"
+          >
+            SweetPotatoTattoo@gmail.com
+          </Link>
+        </div>
       </div>
     </footer>
   );
