@@ -9,9 +9,11 @@ export default function NewsletterSection() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted with email:', email);
     setIsSubmitting(true);
     
     try {
+      console.log('Sending request to /api/subscribe...');
       const response = await fetch('/api/subscribe', {
         method: 'POST',
         headers: {
@@ -20,17 +22,24 @@ export default function NewsletterSection() {
         body: JSON.stringify({ email }),
       });
 
+      console.log('Response status:', response.status);
+      const responseData = await response.json();
+      console.log('Response data:', responseData);
+
       if (response.ok) {
+        console.log('Subscription successful!');
         setIsSubmitted(true);
         setEmail('');
         setTimeout(() => {
           setIsSubmitted(false);
         }, 3000);
       } else {
-        console.error('Failed to subscribe');
+        console.error('Failed to subscribe:', responseData.error);
+        alert('Failed to subscribe: ' + (responseData.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error subscribing:', error);
+      alert('Error subscribing: ' + error);
     } finally {
       setIsSubmitting(false);
     }
@@ -40,8 +49,8 @@ export default function NewsletterSection() {
     <section className="relative py-12 px-4 mb-8 w-full min-h-[300px] overflow-hidden">
       {/* Background image using regular img tag */}
       <img
-        src="/berry.jpg"
-        alt="Berry background"
+        src="/sparrow.png"
+        alt="Sparrow background"
         className="absolute inset-0 w-full h-full object-cover"
       />
       
