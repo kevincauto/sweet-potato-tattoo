@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState('');
@@ -47,12 +48,15 @@ export default function NewsletterSection() {
 
   return (
     <section className="relative py-12 px-4 mb-8 w-full min-h-[300px] overflow-hidden">
-      {/* Background image using regular img tag */}
-      <img
-        src="/sparrow.png"
-        alt="Sparrow background"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      {/* Background image using Next.js Image */}
+      <div className="absolute inset-0">
+        <Image
+          src="/sparrow.png"
+          alt="Sparrow background"
+          fill
+          className="object-cover"
+        />
+      </div>
       
       {/* Content */}
       <div className="relative z-10 flex items-center justify-center min-h-[300px]">

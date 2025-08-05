@@ -1,8 +1,7 @@
 import { kv } from '@vercel/kv';
 import { list } from '@vercel/blob';
-import Image from 'next/image';
 import NewsletterSection from '@/components/NewsletterSection';
-import GalleryModal from '@/components/GalleryModal';
+import GalleryGrid from '@/components/GalleryGrid';
 
 export default async function Home() {
   // Get gallery images
@@ -22,16 +21,10 @@ export default async function Home() {
         <div className="w-full max-w-6xl text-center">
           <div className="mb-12">
             <h2 className="text-3xl font-light mb-6 text-[#414141]">Gallery</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {existingBlobs.map((blob, index) => (
-                <GalleryModal 
-                  key={index}
-                  imageUrl={blob.url}
-                  caption={captionsMap[blob.url] || ''}
-                  index={index}
-                />
-              ))}
-            </div>
+            <GalleryGrid 
+              images={existingBlobs}
+              captionsMap={captionsMap}
+            />
           </div>
         </div>
       </main>
