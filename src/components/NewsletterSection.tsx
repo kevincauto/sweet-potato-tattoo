@@ -51,7 +51,7 @@ export default function NewsletterSection() {
       {/* Background image using Next.js Image */}
       <div className="absolute inset-0">
         <Image
-          src="/sparrow.png"
+          src="/birds3.png"
           alt="Sparrow background"
           fill
           className="object-cover"
