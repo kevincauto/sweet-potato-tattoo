@@ -19,7 +19,7 @@ export default function QuestionsPage() {
             onClick={() => toggleQuestion('custom')}
             className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors text-[#414141] rounded-lg"
           >
-            <h2 className="text-xl font-semibold">Do you do custom tattoo requests?</h2>
+            <h2 className="text-xl font-light">Do you do custom tattoo requests?</h2>
             <span className="text-2xl transition-transform duration-200">
               {openQuestion === 'custom' ? '−' : '+'}
             </span>
@@ -88,7 +88,7 @@ export default function QuestionsPage() {
             onClick={() => toggleQuestion('touchups')}
             className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors text-[#414141] rounded-lg"
           >
-            <h2 className="text-xl font-semibold">How do you handle touch-ups?</h2>
+            <h2 className="text-xl font-light">How do you handle touch-ups?</h2>
             <span className="text-2xl transition-transform duration-200">
               {openQuestion === 'touchups' ? '−' : '+'}
             </span>
@@ -125,7 +125,7 @@ export default function QuestionsPage() {
             onClick={() => toggleQuestion('location')}
             className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors text-[#414141] rounded-lg"
           >
-            <h2 className="text-xl font-semibold">Where are you located? How do I get there?</h2>
+            <h2 className="text-xl font-light">Where are you located? How do I get there?</h2>
             <span className="text-2xl transition-transform duration-200">
               {openQuestion === 'location' ? '−' : '+'}
             </span>
