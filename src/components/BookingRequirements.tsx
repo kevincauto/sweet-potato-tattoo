@@ -1,0 +1,187 @@
+"use client";
+
+import { useState } from 'react';
+
+export default function BookingRequirements() {
+  const [openSection, setOpenSection] = useState<string | null>('important-notes');
+
+  const toggleSection = (sectionId: string) => {
+    setOpenSection(openSection === sectionId ? null : sectionId);
+  };
+
+  const requirements = [
+    {
+      id: 'important-notes',
+      title: 'Important Notes',
+      content: (
+        <div className="space-y-4">
+          <div>
+            <p className="font-bold">Age & Photo ID:</p>
+            <p>New clients must be 18+ and bring a valid photo ID to the first appointment.</p>
+          </div>
+          <div>
+            <p className="font-bold">Health:</p>
+            <p>If you have taken antibiotics within 10 days of the session, please reschedule.</p>
+          </div>
+          <div>
+            <p className="font-bold">Deposit:</p>
+            <p>A $50 non-refundable deposit is required when booking and is applied to the final tattoo cost.</p>
+          </div>
+          <div>
+            <p className="font-bold">Accessibility:</p>
+            <p>The studio is up three flights of stairs and is not wheelchair-accessible.</p>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'lateness',
+      title: 'Lateness & Rescheduling',
+      content: (
+        <div className="space-y-4">
+          <div>
+            <p className="font-bold">Arrival window:</p>
+            <p>Aim to arrive 5–10 minutes early. Up to 20 minutes of grace time is allowed; text 267-528-7752 if you're delayed.</p>
+          </div>
+          <div>
+            <p className="font-bold">Late arrival (&gt; 20 min):</p>
+            <p>Appointment may be cancelled or a late fee may apply, depending on the day's schedule.</p>
+          </div>
+          <div>
+            <p className="font-bold">Reschedule ≥ 48 hrs ahead:</p>
+            <p>Original deposit carries over.</p>
+          </div>
+          <div>
+            <p className="font-bold">Reschedule &lt; 48 hrs or second reschedule:</p>
+            <p>Treated as a cancellation; a new deposit is required.</p>
+          </div>
+          <div>
+            <p className="font-bold">Cancellations by artist:</p>
+            <p>Deposit may be refunded or carried over; you'll be notified at least 24 hrs in advance when possible.</p>
+          </div>
+          <div>
+            <p className="font-bold">No-shows:</p>
+            <ul className="list-disc pl-6 space-y-1">
+              <li>New clients will not be re-booked.</li>
+              <li>Returning clients must explain promptly or future bookings may be refused.</li>
+            </ul>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'preparation',
+      title: 'Preparing for Your Appointment',
+      content: (
+        <div className="space-y-4">
+          <div>
+            <p className="font-bold">Technique & Timing:</p>
+            <p>Hand-poked tattoos only (no machine); most sessions run 1–3 hours, so plan accordingly.</p>
+          </div>
+          <div>
+            <p className="font-bold">Before your appointment:</p>
+            <ul className="list-disc pl-6 space-y-1">
+              <li>Eat & hydrate beforehand.</li>
+              <li>Wear loose, comfortable clothing you don't mind getting inky; slip-on shoes make it easier (shoes come off inside).</li>
+              <li>Shave the tattoo area in advance if possible to reduce single-use razor waste (optional).</li>
+            </ul>
+          </div>
+          <div>
+            <p className="font-bold">Bring:</p>
+            <ul className="list-disc pl-6 space-y-1">
+              <li>Photo ID (new clients)</li>
+              <li>Mask (if you opted for a masks-on session)</li>
+              <li>Water/snacks for breaks</li>
+              <li>Music + headphones or a book if you prefer quiet time</li>
+            </ul>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'studio',
+      title: 'Day-Of Appointment',
+      content: (
+        <div className="space-y-4">
+          <div>
+            <p className="font-bold">Studio Details:</p>
+            <p>Private room inside the artist's apartment (shared with their partner). Please treat the space respectfully.</p>
+          </div>
+          <div>
+            <p className="font-bold">Studio rules:</p>
+            <ul className="list-disc pl-6 space-y-1">
+              <li>Shoes off once inside.</li>
+              <li>Consent form: Fill out via QR code on your phone; let the artist know in advance if you need a paper copy.</li>
+              <li>Background sound: Minimal; feel free to use your own headphones.</li>
+            </ul>
+          </div>
+          <div>
+            <p className="font-bold">Building entry:</p>
+            <p>Use the Uber St door marked "2N / 2S" and text 267-528-7752 upon arrival.</p>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'transit',
+      title: 'Getting There (Parking & Transit)',
+      content: (
+        <div className="space-y-4">
+          <div>
+            <p className="font-bold">Parking:</p>
+            <p>Free street parking nearby—check signs for time limits, be ready for parallel parking, and expect a short walk. Consider garages/lots or transit if parallel parking is a concern.</p>
+          </div>
+          <div>
+            <p className="font-bold">Public transit:</p>
+            <ul className="list-disc pl-6 space-y-1">
+              <li>19th & Girard trolley (short walk)</li>
+              <li>Broad Street Line – Girard Station (≈ 10 min walk)</li>
+              <li>Bus routes 33 & 61 stop nearby</li>
+            </ul>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'payment',
+      title: 'Payment & Tips',
+      content: (
+        <div className="space-y-4">
+          <div>
+            <p className="font-bold">Payments accepted:</p>
+            <p>Venmo (preferred), Zelle, or cash.</p>
+          </div>
+          <div>
+            <p className="font-bold">Tips:</p>
+            <p>Appreciated but never expected; accepted via cash or Venmo.</p>
+          </div>
+        </div>
+      )
+    }
+  ];
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-4 mb-8">
+      {requirements.map((section) => (
+        <div key={section.id} className="bg-white rounded-lg shadow-sm border">
+          <button
+            onClick={() => toggleSection(section.id)}
+            className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors text-[#414141] rounded-lg"
+          >
+            <h2 className="text-xl font-semibold">{section.title}</h2>
+            <span className="text-2xl transition-transform duration-200">
+              {openSection === section.id ? '−' : '+'}
+            </span>
+          </button>
+          {openSection === section.id && (
+            <div className="px-6 pb-4">
+              <div className="text-[#414141] leading-relaxed">
+                {section.content}
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
