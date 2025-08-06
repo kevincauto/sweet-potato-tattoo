@@ -41,11 +41,11 @@ export default function BookingRequirements() {
         <div className="space-y-4">
           <div>
             <p className="font-bold">Arrival window:</p>
-            <p>Aim to arrive 5–10 minutes early. Up to 20 minutes of grace time is allowed; text 267-528-7752 if you're delayed.</p>
+            <p>Aim to arrive 5–10 minutes early. Up to 20 minutes of grace time is allowed; text 267-528-7752 if you&apos;re delayed.</p>
           </div>
           <div>
             <p className="font-bold">Late arrival (&gt; 20 min):</p>
-            <p>Appointment may be cancelled or a late fee may apply, depending on the day's schedule.</p>
+            <p>Appointment may be cancelled or a late fee may apply, depending on the day&apos;s schedule.</p>
           </div>
           <div>
             <p className="font-bold">Reschedule ≥ 48 hrs ahead:</p>
@@ -57,7 +57,7 @@ export default function BookingRequirements() {
           </div>
           <div>
             <p className="font-bold">Cancellations by artist:</p>
-            <p>Deposit may be refunded or carried over; you'll be notified at least 24 hrs in advance when possible.</p>
+            <p>Deposit may be refunded or carried over; you&apos;ll be notified at least 24 hrs in advance when possible.</p>
           </div>
           <div>
             <p className="font-bold">No-shows:</p>
@@ -82,7 +82,7 @@ export default function BookingRequirements() {
             <p className="font-bold">Before your appointment:</p>
             <ul className="list-disc pl-6 space-y-1">
               <li>Eat & hydrate beforehand.</li>
-              <li>Wear loose, comfortable clothing you don't mind getting inky; slip-on shoes make it easier (shoes come off inside).</li>
+              <li>Wear loose, comfortable clothing you don&apos;t mind getting inky; slip-on shoes make it easier (shoes come off inside).</li>
               <li>Shave the tattoo area in advance if possible to reduce single-use razor waste (optional).</li>
             </ul>
           </div>
@@ -105,11 +105,11 @@ export default function BookingRequirements() {
         <div className="space-y-4">
           <div>
             <p className="font-bold">Building entry:</p>
-            <p>Use the Uber St door marked "2N / 2S" and text 267-528-7752 upon arrival.</p>
+            <p>Use the Uber St door marked &quot;2N / 2S&quot; and text 267-528-7752 upon arrival.</p>
           </div>
           <div>
             <p className="font-bold">Studio Details:</p>
-            <p>Private room inside the artist's apartment (shared with their partner). Please treat the space respectfully.</p>
+            <p>Private room inside the artist&apos;s apartment (shared with their partner). Please treat the space respectfully.</p>
           </div>
           <div>
             <p className="font-bold">Studio rules:</p>

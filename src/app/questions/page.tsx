@@ -139,7 +139,7 @@ export default function QuestionsPage() {
                 </div>
                 <div>
                   <p className="font-bold">Building entry:</p>
-                  <p>Use the Uber St door marked "2N / 2S" and text 267-528-7752 upon arrival.</p>
+                  <p>Use the Uber St door marked &quot;2N / 2S&quot; and text 267-528-7752 upon arrival.</p>
                 </div>
                 <div>
                   <p className="font-bold">Parking:</p>
