@@ -69,7 +69,7 @@ export default function NewsletterSection() {
             </h2>
             
             <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-              Be the first to know about new design releases and other news.
+              Be the first to know about new design releases, promotions, and other news.
             </p>
           </div>
           

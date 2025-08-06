@@ -28,7 +28,7 @@ export default function QuestionsPage() {
             <div className="px-6 pb-4">
               <div className="text-[#414141] leading-relaxed space-y-4">
                 <p>
-                Yes, but I don&apos;t accept all custom requests. I work within a limited range of styles, and handpoked tattoos have a distinct look to them. Please make sure you like my work/styles before requesting a custom.
+                <span className="font-semibold">Yes</span>, but I don&apos;t accept all custom requests. I work within a limited range of styles, and handpoked tattoos have a distinct look to them. Please make sure you like my work/styles before requesting a custom.
                 </p>
                 
                 <p className="font-semibold">Here is a list of what I will do and what I will not do:</p>
@@ -119,7 +119,45 @@ export default function QuestionsPage() {
             </div>
           )}
         </div>
+
+        <div className="bg-white rounded-lg shadow-sm border">
+          <button
+            onClick={() => toggleQuestion('location')}
+            className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors text-[#414141] rounded-lg"
+          >
+            <h2 className="text-xl font-semibold">Where are you located? How do I get there?</h2>
+            <span className="text-2xl transition-transform duration-200">
+              {openQuestion === 'location' ? '−' : '+'}
+            </span>
+          </button>
+          {openQuestion === 'location' && (
+            <div className="px-6 pb-4">
+              <div className="text-[#414141] leading-relaxed space-y-4">
+                <div>
+                  <p className="font-bold">Location:</p>
+                  <p>1916 Poplar St, Apt 2N<br />Philadelphia, PA 19130</p>
+                </div>
+                <div>
+                  <p className="font-bold">Building entry:</p>
+                  <p>Use the Uber St door marked "2N / 2S" and text 267-528-7752 upon arrival.</p>
+                </div>
+                <div>
+                  <p className="font-bold">Parking:</p>
+                  <p>Free street parking nearby—check signs for time limits, be ready for parallel parking, and expect a short walk. Consider garages/lots or transit if parallel parking is a concern.</p>
+                </div>
+                <div>
+                  <p className="font-bold">Public transit:</p>
+                  <ul className="list-disc pl-6 space-y-1">
+                    <li>19th & Girard trolley (short walk)</li>
+                    <li>Broad Street Line – Girard Station (≈ 10 min walk)</li>
+                    <li>Bus routes 33 & 61 stop nearby</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );
-} 
+}

@@ -76,14 +76,16 @@ export default function Navbar() {
               </Link>
             </li>
             <li>
-              <a 
-                href="https://form.jotform.com/250076675634159" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-[#7B894C] hover:text-[#414141] transition-colors"
+              <Link 
+                href="/consent-form" 
+                className={`transition-colors ${
+                  pathname === "/consent-form" 
+                    ? "text-[#414141]" 
+                    : "text-[#7B894C] hover:text-[#414141]"
+                }`}
               >
                 Consent Form
-              </a>
+              </Link>
             </li>
           </ul>
         </nav>

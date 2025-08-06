@@ -21,7 +21,7 @@ export default function BookingRequirements() {
           </div>
           <div>
             <p className="font-bold">Health:</p>
-            <p>If you have taken antibiotics within 10 days of the session, please reschedule.</p>
+            <p>If you have taken antibiotics within 10 days of the session or are feeling unwell, please reschedule.</p>
           </div>
           <div>
             <p className="font-bold">Deposit:</p>
@@ -104,6 +104,10 @@ export default function BookingRequirements() {
       content: (
         <div className="space-y-4">
           <div>
+            <p className="font-bold">Building entry:</p>
+            <p>Use the Uber St door marked "2N / 2S" and text 267-528-7752 upon arrival.</p>
+          </div>
+          <div>
             <p className="font-bold">Studio Details:</p>
             <p>Private room inside the artist's apartment (shared with their partner). Please treat the space respectfully.</p>
           </div>
@@ -115,10 +119,6 @@ export default function BookingRequirements() {
               <li>Background sound: Minimal; feel free to use your own headphones.</li>
             </ul>
           </div>
-          <div>
-            <p className="font-bold">Building entry:</p>
-            <p>Use the Uber St door marked "2N / 2S" and text 267-528-7752 upon arrival.</p>
-          </div>
         </div>
       )
     },
@@ -127,6 +127,10 @@ export default function BookingRequirements() {
       title: 'Getting There (Parking & Transit)',
       content: (
         <div className="space-y-4">
+          <div>
+            <p className="font-bold">Location:</p>
+            <p>1916 Poplar St, Apt 2N<br />Philadelphia, PA 19130</p>
+          </div>
           <div>
             <p className="font-bold">Parking:</p>
             <p>Free street parking nearby—check signs for time limits, be ready for parallel parking, and expect a short walk. Consider garages/lots or transit if parallel parking is a concern.</p>
