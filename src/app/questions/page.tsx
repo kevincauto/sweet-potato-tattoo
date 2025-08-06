@@ -28,7 +28,7 @@ export default function QuestionsPage() {
             <div className="px-6 pb-4">
               <div className="text-[#414141] leading-relaxed space-y-4">
                 <p>
-                  I don&apos;t accept all custom requests. I work within a limited range of styles, and handpoked tattoos have a distinct look to them. Please make sure you like my work/styles before requesting a custom.
+                Yes, but I don&apos;t accept all custom requests. I work within a limited range of styles, and handpoked tattoos have a distinct look to them. Please make sure you like my work/styles before requesting a custom.
                 </p>
                 
                 <p className="font-semibold">Here is a list of what I will do and what I will not do:</p>

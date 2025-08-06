@@ -3,6 +3,7 @@ import { montserrat } from './fonts';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import ConditionalNewsletter from '@/components/ConditionalNewsletter';
 
 export const metadata: Metadata = {
   title: 'Sweet Potato Tattoo',
@@ -28,7 +29,10 @@ export default function RootLayout({
       >
       <body className={`flex flex-col min-h-full font-montserrat font-light`}>
         <Navbar />
-        {children}
+        <main className="flex-grow">
+          {children}
+        </main>
+        <ConditionalNewsletter />
         <Footer />
       </body>
     </html>

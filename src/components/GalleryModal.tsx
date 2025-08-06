@@ -50,60 +50,69 @@ export default function GalleryModal({ allImages, allCaptions, currentIndex, onC
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-80"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-90"
       onClick={onClose}
     >
-      {/* Modal Content */}
+      {/* Modal Content container */}
       <div 
-        className="relative flex flex-col max-w-4xl w-full max-h-[90vh] bg-[#1a1a1a] rounded-lg shadow-xl"
+        className="relative flex flex-col w-full h-full max-w-6xl max-h-[95vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Image Display Area */}
-        <div className="relative flex-1 flex items-center justify-center overflow-hidden p-4">
+        {/* Image container */}
+        <div className="relative flex-1 w-full">
           <Image
             src={currentImage.url}
             alt={currentCaption || `Gallery image ${currentImageIndex + 1}`}
-            width={0}
-            height={0}
-            sizes="100vw"
-            className="max-w-full max-h-full w-auto h-auto object-contain rounded"
+            fill
+            className="object-contain"
             priority
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         </div>
 
         {/* Caption and Counter */}
         {(currentCaption || allImages.length > 0) && (
-          <div className="flex-shrink-0 text-white p-4 border-t border-gray-700 flex justify-between items-center gap-4">
-            <p className="text-sm leading-relaxed flex-grow">{currentCaption}</p>
-            <div className="text-sm font-mono flex-shrink-0">
-              {currentImageIndex + 1} / {allImages.length}
-            </div>
+          <div className="flex-shrink-0 text-white p-3 text-center bg-black bg-opacity-20">
+            <p className="text-sm leading-relaxed">{currentCaption}</p>
+            {allImages.length > 1 && (
+              <div className="text-xs text-gray-400 pt-1">
+                {currentImageIndex + 1} / {allImages.length}
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* Controls */}
+      {/* Close Button */}
       <button
         onClick={(e) => { e.stopPropagation(); onClose(); }}
-        className="absolute top-4 right-4 z-20 text-white text-4xl hover:text-gray-300 transition-opacity"
+        className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20 text-white text-4xl hover:text-gray-300 transition-opacity"
         aria-label="Close modal"
       >
         ×
       </button>
-      <button
-        onClick={(e) => { e.stopPropagation(); goToPrevious(); }}
-        className="absolute left-4 sm:left-8 top-1/2 transform -translate-y-1/2 z-10 text-white text-3xl hover:text-gray-300 transition-colors bg-black bg-opacity-30 hover:bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center"
-        aria-label="Previous image"
-      >
-        ‹
-      </button>
-      <button
-        onClick={(e) => { e.stopPropagation(); goToNext(); }}
-        className="absolute right-4 sm:right-8 top-1/2 transform -translate-y-1/2 z-10 text-white text-3xl hover:text-gray-300 transition-colors bg-black bg-opacity-30 hover:bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center"
-        aria-label="Next image"
-      >
-        ›
-      </button>
+
+      {/* Prev Button */}
+      {allImages.length > 1 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); goToPrevious(); }}
+          className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 text-white text-3xl hover:text-gray-300 bg-black/30 hover:bg-black/50 rounded-full w-12 h-12 flex items-center justify-center transition-all"
+          aria-label="Previous image"
+        >
+          ‹
+        </button>
+      )}
+      
+      {/* Next Button */}
+      {allImages.length > 1 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); goToNext(); }}
+          className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 text-white text-3xl hover:text-gray-300 bg-black/30 hover:bg-black/50 rounded-full w-12 h-12 flex items-center justify-center transition-all"
+          aria-label="Next image"
+        >
+          ›
+        </button>
+      )}
     </div>
   );
 }
