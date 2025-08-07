@@ -88,14 +88,12 @@ export default function GalleryAdminPage() {
 
           const form = event.target as HTMLFormElement;
           const files = form.file.files as FileList;
-          const captionInput = form.caption as HTMLTextAreaElement;
-          const caption = captionInput.value.trim();
 
           if (!files || files.length === 0) return;
 
           for (const file of Array.from(files)) {
             const response = await fetch(
-              `/api/upload/gallery?filename=${encodeURIComponent(file.name)}&caption=${encodeURIComponent(caption)}`,
+              `/api/upload/gallery?filename=${encodeURIComponent(file.name)}`,
               {
                 method: 'POST',
                 body: file,
@@ -138,19 +136,6 @@ export default function GalleryAdminPage() {
           >
             Upload
           </button>
-        </div>
-        
-        <div className="mb-4">
-          <label htmlFor="caption" className="block text-sm font-medium text-gray-700 mb-2">
-            Caption (optional)
-          </label>
-          <textarea
-            name="caption"
-            id="caption"
-            rows={3}
-            placeholder="Enter a caption for the uploaded images..."
-            className="w-full border rounded-lg p-3 resize-vertical"
-          />
         </div>
       </form>
       {blob && (
