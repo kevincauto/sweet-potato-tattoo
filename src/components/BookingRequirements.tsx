@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 export default function BookingRequirements() {
-  const [openSection, setOpenSection] = useState<string | null>('important-notes');
+  const [openSection, setOpenSection] = useState<string | null>(null);
 
   const toggleSection = (sectionId: string) => {
     setOpenSection(openSection === sectionId ? null : sectionId);
@@ -71,7 +71,7 @@ export default function BookingRequirements() {
     },
     {
       id: 'preparation',
-      title: 'Preparing For Your Appointment',
+      title: 'Preparing for Your Appointment',
       content: (
         <div className="space-y-4">
           <div>
@@ -100,7 +100,7 @@ export default function BookingRequirements() {
     },
     {
       id: 'studio',
-      title: 'Day-Of The Appointment',
+      title: 'Day-Of Appointment',
       content: (
         <div className="space-y-4">
           <div>

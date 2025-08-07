@@ -5,13 +5,20 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json();
+    const { name, email } = await request.json();
 
     // Validate email
-    const isValid = typeof email === 'string' && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
-    if (!isValid) {
+    const isValidEmail = typeof email === 'string' && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+    if (!isValidEmail) {
       console.error('Invalid email format:', email);
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
+    }
+
+    // Validate name
+    const isValidName = typeof name === 'string' && name.trim().length > 0;
+    if (!isValidName) {
+      console.error('Invalid name:', name);
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
     // Check if Resend API key is configured
@@ -20,22 +27,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email service not configured' }, { status: 500 });
     }
 
-    console.log('Attempting to send newsletter signup email for:', email);
+    console.log('Attempting to send newsletter signup email for:', name, email);
 
     // Send email notification
     const result = await resend.emails.send({
       from: 'hello@sweetpotatotattoo.com', // Using your verified domain
-      to: 'sweetpotatotattoo@gmail.com',
+      to: 'KevinMCauto@gmail.com',
       subject: 'New Newsletter Signup - Sweet Potato Tattoo',
       html: `
         <h2>New Newsletter Signup</h2>
         <p>A new person has signed up for your newsletter!</p>
+        <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
         <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
         <hr>
         <p><em>This is an automated notification from your Sweet Potato Tattoo website.</em></p>
       `,
-      text: `New newsletter signup: ${email} - Date: ${new Date().toLocaleString()}`,
+      text: `New newsletter signup: ${name} (${email}) - Date: ${new Date().toLocaleString()}`,
     });
 
     console.log('Email sent successfully:', result);

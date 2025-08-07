@@ -4,13 +4,14 @@ import { useState } from 'react';
 import Image from 'next/image';
 
 export default function NewsletterSection() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted with email:', email);
+    console.log('Form submitted with name:', name, 'email:', email);
     setIsSubmitting(true);
     
     try {
@@ -20,7 +21,7 @@ export default function NewsletterSection() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ name, email }),
       });
 
       console.log('Response status:', response.status);
@@ -30,6 +31,7 @@ export default function NewsletterSection() {
       if (response.ok) {
         console.log('Subscription successful!');
         setIsSubmitted(true);
+        setName('');
         setEmail('');
         setTimeout(() => {
           setIsSubmitted(false);
@@ -77,22 +79,32 @@ export default function NewsletterSection() {
           <div className="bg-[#f4f3f2] p-6">
             {!isSubmitted ? (
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="flex flex-col sm:flex-row gap-3 max-w-sm sm:max-w-md mx-auto">
+                <div className="flex flex-col gap-3 max-w-sm sm:max-w-md mx-auto">
                   <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Your email address"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Full Name"
                     required
-                    className="flex-1 px-3 sm:px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7B894C] focus:border-transparent text-sm sm:text-base bg-white"
+                    className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7B894C] focus:border-transparent text-sm sm:text-base bg-white"
                   />
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="bg-[#7B894C] text-white px-4 sm:px-6 py-3 rounded-lg hover:bg-[#6A7A3F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-                  >
-                    {isSubmitting ? 'Signing Up...' : 'Sign Up'}
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Your Email Address"
+                      required
+                      className="flex-1 px-3 sm:px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7B894C] focus:border-transparent text-sm sm:text-base bg-white"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="bg-[#7B894C] text-white px-4 sm:px-6 py-3 rounded-lg hover:bg-[#6A7A3F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                    >
+                      {isSubmitting ? 'Signing Up...' : 'Sign Up'}
+                    </button>
+                  </div>
                 </div>
               </form>
             ) : (
