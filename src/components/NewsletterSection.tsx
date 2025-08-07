@@ -53,7 +53,7 @@ export default function NewsletterSection() {
       {/* Background image using Next.js Image */}
       <div className="absolute inset-0">
         <Image
-          src="/birds3.png"
+          src="/fox-up.jpeg"
           alt="Sparrow background"
           fill
           className="object-cover"
@@ -67,7 +67,7 @@ export default function NewsletterSection() {
           {/* Top half - white background */}
           <div className="bg-white p-6 text-center">
             <h2 className="text-xl sm:text-2xl font-light text-gray-800 mb-3">
-              Stay in the Loop
+              Join the Newsletter!
             </h2>
             
             <p className="text-sm sm:text-base text-gray-600 leading-relaxed">

@@ -45,7 +45,7 @@ export default function NewsletterSignup() {
         onClick={() => setIsOpen(true)}
         className="bg-[#7B894C] text-white px-6 py-3 rounded-lg hover:bg-[#6A7A3F] transition-colors"
       >
-        Stay in the Loop
+        Join the Newsletter!
       </button>
 
       {/* Modal overlay */}
@@ -75,7 +75,7 @@ export default function NewsletterSignup() {
             
             <div className="text-center">
               <h2 className="text-2xl font-serif font-bold text-gray-800 mb-3">
-                Stay in the Loop
+                Join the Newsletter!
               </h2>
               
               <p className="text-gray-600 mb-6 leading-relaxed">
