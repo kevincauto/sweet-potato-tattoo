@@ -71,7 +71,7 @@ export default function BookingRequirements() {
     },
     {
       id: 'preparation',
-      title: 'Preparing for Your Appointment',
+      title: 'Preparing For Your Appointment',
       content: (
         <div className="space-y-4">
           <div>
@@ -100,7 +100,7 @@ export default function BookingRequirements() {
     },
     {
       id: 'studio',
-      title: 'Day-Of Appointment',
+      title: 'Day-Of The Appointment',
       content: (
         <div className="space-y-4">
           <div>

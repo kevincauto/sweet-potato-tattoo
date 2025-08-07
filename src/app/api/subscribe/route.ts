@@ -24,8 +24,8 @@ export async function POST(request: Request) {
 
     // Send email notification
     const result = await resend.emails.send({
-      from: 'onboarding@resend.dev', // Using Resend's default domain for testing
-      to: 'KevinMCauto@gmail.com',
+      from: 'hello@sweetpotatotattoo.com', // Using your verified domain
+      to: 'sweetpotatotattoo@gmail.com',
       subject: 'New Newsletter Signup - Sweet Potato Tattoo',
       html: `
         <h2>New Newsletter Signup</h2>
@@ -56,4 +56,4 @@ export async function POST(request: Request) {
     
     return NextResponse.json({ error: 'Failed to process subscription' }, { status: 500 });
   }
-} 
+}
