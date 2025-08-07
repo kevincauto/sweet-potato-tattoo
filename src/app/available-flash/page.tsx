@@ -7,15 +7,20 @@ export const metadata = {
 };
 
 export default async function AvailableFlashPage() {
-  // Get URLs from KV
+  // Get URLs from KV in the correct order
   let imageUrls = await kv.lrange('flash-images', 0, -1);
   if (imageUrls.length === 0) {
     imageUrls = await kv.lrange('images', 0, -1);
   }
   
-  // Get all blobs and filter to only those that exist in both KV and blob storage
+  // Get all blobs and create a map for quick lookup
   const { blobs } = await list();
-  const existingBlobs = blobs.filter((b) => imageUrls.includes(b.url));
+  const blobMap = new Map(blobs.map(b => [b.url, b]));
+  
+  // Filter and order blobs according to the KV list order
+  const existingBlobs = imageUrls
+    .map(url => blobMap.get(url))
+    .filter(blob => blob !== undefined);
   
   // Get captions for existing blobs
   const captionsRaw = (await kv.hgetall('captions')) as Record<string, string> | null;

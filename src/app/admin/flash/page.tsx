@@ -5,7 +5,7 @@ import type { PutBlobResult } from '@vercel/blob';
 import Link from 'next/link';
 import DraggableImageGrid from '../../../components/DraggableImageGrid';
 
-export default function GalleryAdminPage() {
+export default function FlashAdminPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   interface ImgItem { url: string; caption?: string }
@@ -14,7 +14,7 @@ export default function GalleryAdminPage() {
   const [tempCaption, setTempCaption] = useState('');
 
   const fetchImages = useCallback(async () => {
-    const response = await fetch('/api/upload/gallery');
+    const response = await fetch('/api/upload/flash');
     if (response.ok) {
       const data = (await response.json()) as { items: ImgItem[] };
       setImages(data.items);
@@ -29,7 +29,7 @@ export default function GalleryAdminPage() {
 
   async function handleDelete(url: string) {
     try {
-      const response = await fetch(`/api/upload/gallery?url=${encodeURIComponent(url)}`, {
+      const response = await fetch(`/api/upload/flash?url=${encodeURIComponent(url)}`, {
         method: 'DELETE',
       });
       
@@ -48,7 +48,7 @@ export default function GalleryAdminPage() {
 
   async function handleEditCaption(url: string, caption: string) {
     await fetch(
-      `/api/upload/gallery?url=${encodeURIComponent(url)}&caption=${encodeURIComponent(caption)}`,
+      `/api/upload/flash?url=${encodeURIComponent(url)}&caption=${encodeURIComponent(caption)}`,
       { method: 'PUT' }
     );
     setImages((imgs) =>
@@ -64,19 +64,19 @@ export default function GalleryAdminPage() {
 
   return (
     <main className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold text-center my-8">Gallery Admin</h1>
+      <h1 className="text-4xl font-bold text-center my-8">Flash Admin</h1>
       
       {/* Navigation */}
       <div className="flex justify-center gap-4 mb-6">
         <Link 
           href="/admin/flash" 
-          className="px-4 py-2 rounded-lg border bg-white text-black hover:bg-gray-100"
+          className="px-4 py-2 rounded-lg border bg-blue-500 text-white"
         >
           Available Flash
         </Link>
         <Link 
           href="/admin/gallery" 
-          className="px-4 py-2 rounded-lg border bg-blue-500 text-white"
+          className="px-4 py-2 rounded-lg border bg-white text-black hover:bg-gray-100"
         >
           Gallery
         </Link>
@@ -95,7 +95,7 @@ export default function GalleryAdminPage() {
 
           for (const file of Array.from(files)) {
             const response = await fetch(
-              `/api/upload/gallery?filename=${encodeURIComponent(file.name)}&caption=${encodeURIComponent(caption)}`,
+              `/api/upload/flash?filename=${encodeURIComponent(file.name)}&caption=${encodeURIComponent(caption)}`,
               {
                 method: 'POST',
                 body: file,
@@ -168,7 +168,7 @@ export default function GalleryAdminPage() {
       )}
 
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">Gallery Images</h2>
+        <h2 className="text-2xl font-bold">Available Flash Images</h2>
         <p className="text-sm text-gray-600">Drag and drop to reorder images</p>
       </div>
       
@@ -181,8 +181,8 @@ export default function GalleryAdminPage() {
         setEditingUrl={setEditingUrl}
         tempCaption={tempCaption}
         setTempCaption={setTempCaption}
-        collection="gallery"
+        collection="flash"
       />
     </main>
   );
-} 
+}

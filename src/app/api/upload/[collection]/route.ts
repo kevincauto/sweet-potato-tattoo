@@ -20,12 +20,23 @@ export async function POST(request: Request, { params }: any) {
     return NextResponse.json({ message: 'No file to upload.' }, { status: 400 });
   }
 
-  const blob = await put(filename, request.body, {
+  // Generate a unique filename to avoid conflicts
+  const timestamp = Date.now();
+  const randomId = Math.random().toString(36).substring(2, 8);
+  const fileExtension = filename.includes('.') ? filename.split('.').pop() : '';
+  const baseName = filename.includes('.') ? filename.replace(/\.[^/.]+$/, '') : filename;
+  const uniqueFilename = `${baseName}-${timestamp}-${randomId}${fileExtension ? '.' + fileExtension : ''}`;
+
+  const blob = await put(uniqueFilename, request.body, {
     access: 'public',
-    allowOverwrite: true,
   });
 
-  await kv.lpush(`${collection}-images`, blob.url);
+  // Check if this URL already exists in the list (shouldn't happen with unique names, but just in case)
+  const existingUrls = await kv.lrange(`${collection}-images`, 0, -1);
+  if (!existingUrls.includes(blob.url)) {
+    await kv.lpush(`${collection}-images`, blob.url);
+  }
+
   if (caption) {
     await kv.hset('captions', { [blob.url]: caption });
   }
@@ -41,11 +52,29 @@ export async function GET(_: Request, { params }: any) {
   const urls: string[] = await kv.lrange(`${collection}-images`, 0, -1);
   if (urls.length === 0) return NextResponse.json({ blobs: [] });
 
+  // Remove duplicates while preserving order (keep first occurrence)
+  const uniqueUrls = urls.filter((url, index) => urls.indexOf(url) === index);
+  
+  // If we found duplicates, update the KV list
+  if (uniqueUrls.length !== urls.length) {
+    await kv.del(`${collection}-images`);
+    if (uniqueUrls.length > 0) {
+      await kv.rpush(`${collection}-images`, ...uniqueUrls);
+    }
+  }
+
   const { blobs } = await list();
-  const collectionBlobs = blobs.filter((b) => urls.includes(b.url));
+  
+  // Create a map of URL to blob for quick lookup
+  const blobMap = new Map(blobs.map(b => [b.url, b]));
+  
+  // Filter and order blobs according to the KV list order
+  const orderedBlobs = uniqueUrls
+    .map(url => blobMap.get(url))
+    .filter(blob => blob !== undefined);
 
   const items = await Promise.all(
-    collectionBlobs.map(async (b) => {
+    orderedBlobs.map(async (b) => {
       const caption = (await kv.hget('captions', b.url)) as string | null;
       return { url: b.url, caption: caption || '' };
     })
@@ -82,7 +111,7 @@ export async function PATCH(request: Request, { params }: any) {
     // Delete the existing list and recreate it with the new order
     await kv.del(`${collection}-images`);
     if (urls.length > 0) {
-      await kv.lpush(`${collection}-images`, ...urls);
+      await kv.rpush(`${collection}-images`, ...urls);
     }
 
     return NextResponse.json({ ok: true, message: 'Order updated successfully' });

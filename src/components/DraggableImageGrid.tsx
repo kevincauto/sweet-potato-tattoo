@@ -64,7 +64,7 @@ export default function DraggableImageGrid({
     const [draggedItem] = newImages.splice(draggedIndex, 1);
     newImages.splice(dropIndex, 0, draggedItem);
 
-    onReorder(newImages);
+    handleReorder(newImages);
     setDraggedIndex(null);
     setDragOverIndex(null);
   };
@@ -98,6 +98,16 @@ export default function DraggableImageGrid({
   const handleReorder = (newOrder: ImgItem[]) => {
     onReorder(newOrder);
     saveOrder(newOrder);
+  };
+
+  const handleDeleteClick = (url: string) => {
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this image? This action cannot be undone.'
+    );
+    
+    if (confirmed) {
+      onDelete(url);
+    }
   };
 
   return (
@@ -153,8 +163,9 @@ export default function DraggableImageGrid({
             </p>
           )}
           <button
-            onClick={() => onDelete(image.url)}
-            className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full z-10"
+            onClick={() => handleDeleteClick(image.url)}
+            className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full z-10 hover:bg-red-600 transition-colors"
+            title="Delete image"
           >
             &times;
           </button>

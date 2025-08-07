@@ -4,10 +4,18 @@ import NewsletterSection from '@/components/NewsletterSection';
 import GalleryGrid from '@/components/GalleryGrid';
 
 export default async function Home() {
-  // Get gallery images
+  // Get gallery images in the correct order
   const imageUrls = await kv.lrange('gallery-images', 0, -1);
   const { blobs } = await list();
-  const existingBlobs = blobs.filter((b) => imageUrls.includes(b.url));
+  
+  // Create a map of URL to blob for quick lookup
+  const blobMap = new Map(blobs.map(b => [b.url, b]));
+  
+  // Filter and order blobs according to the KV list order
+  const existingBlobs = imageUrls
+    .map(url => blobMap.get(url))
+    .filter(blob => blob !== undefined);
+  
   const captionsRaw = (await kv.hgetall('captions')) as Record<string, string> | null;
   const captionsMap = captionsRaw ?? {};
 
