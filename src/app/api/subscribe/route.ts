@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
   try {
-    const { name, email } = await request.json();
+    const { name, email, city, state, comments } = await request.json();
 
     // Validate email
     const isValidEmail = typeof email === 'string' && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
@@ -39,11 +39,14 @@ export async function POST(request: Request) {
         <p>A new person has signed up for your newsletter!</p>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
+        ${city ? `<p><strong>City:</strong> ${city}</p>` : ''}
+        ${state ? `<p><strong>State:</strong> ${state}</p>` : ''}
+        ${comments ? `<p><strong>Comments:</strong> ${comments}</p>` : ''}
         <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
         <hr>
         <p><em>This is an automated notification from your Sweet Potato Tattoo website.</em></p>
       `,
-      text: `New newsletter signup: ${name} (${email}) - Date: ${new Date().toLocaleString()}`,
+      text: `New newsletter signup: ${name} (${email})${city ? ` - City: ${city}` : ''}${state ? `, State: ${state}` : ''}${comments ? ` - Comments: ${comments}` : ''} - Date: ${new Date().toLocaleString()}`,
     });
 
     console.log('Email sent successfully:', result);

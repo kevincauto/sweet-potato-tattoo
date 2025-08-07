@@ -1,6 +1,5 @@
 import { kv } from '@vercel/kv';
 import { list } from '@vercel/blob';
-import NewsletterSection from '@/components/NewsletterSection';
 import GalleryGrid from '@/components/GalleryGrid';
 
 export default async function Home() {
@@ -21,9 +20,6 @@ export default async function Home() {
 
   return (
     <>
-      {/* Newsletter section - right after navigation */}
-      <NewsletterSection />
-      
       {/* Gallery section */}
       <main className="flex flex-1 flex-col items-center justify-center p-4">
         <div className="w-full max-w-6xl text-center">

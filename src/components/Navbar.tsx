@@ -87,6 +87,18 @@ export default function Navbar() {
                 Consent Form
               </Link>
             </li>
+            <li>
+              <Link 
+                href="/newsletter" 
+                className={`transition-colors px-2 py-1 rounded ${
+                  pathname === "/newsletter" 
+                    ? "text-[#414141]" 
+                    : "text-[#7B894C] hover:text-[#414141]"
+                }`}
+              >
+                Newsletter
+              </Link>
+            </li>
           </ul>
         </nav>
       </div>

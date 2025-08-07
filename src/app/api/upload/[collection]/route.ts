@@ -49,7 +49,18 @@ export async function GET(_: Request, { params }: any) {
   const allowed = ['designs', 'gallery'];
   if (!allowed.includes(collection)) return NextResponse.json({ blobs: [] });
 
-  const urls: string[] = await kv.lrange(`${collection}-images`, 0, -1);
+  let urls: string[] = await kv.lrange(`${collection}-images`, 0, -1);
+  
+  // For designs collection, check for old flash-images key as fallback
+  if (collection === 'designs' && urls.length === 0) {
+    urls = await kv.lrange('flash-images', 0, -1);
+    // If we found data in the old key, migrate it to the new key
+    if (urls.length > 0) {
+      await kv.del('flash-images');
+      await kv.rpush('designs-images', ...urls);
+    }
+  }
+  
   if (urls.length === 0) return NextResponse.json({ blobs: [] });
 
   // Remove duplicates while preserving order (keep first occurrence)
