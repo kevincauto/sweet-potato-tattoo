@@ -44,7 +44,7 @@ export default function GalleryGrid({ images, captionsMap }: GalleryGridProps) {
             />
             {captionsMap[blob.url] && (
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">
-                <p className="text-white text-sm text-center leading-relaxed drop-shadow-lg">
+                <p className="text-white text-sm text-center leading-relaxed drop-shadow-lg whitespace-pre-line">
                   {captionsMap[blob.url]}
                 </p>
               </div>
@@ -64,4 +64,4 @@ export default function GalleryGrid({ images, captionsMap }: GalleryGridProps) {
       )}
     </>
   );
-} 
+}

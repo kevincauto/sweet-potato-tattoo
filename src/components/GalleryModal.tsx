@@ -73,7 +73,7 @@ export default function GalleryModal({ allImages, allCaptions, currentIndex, onC
         {/* Caption and Counter */}
         {(currentCaption || allImages.length > 0) && (
           <div className="flex-shrink-0 text-white p-3 text-center bg-black bg-opacity-20">
-            <p className="text-sm leading-relaxed">{currentCaption}</p>
+            <p className="text-sm leading-relaxed whitespace-pre-line">{currentCaption}</p>
             {allImages.length > 1 && (
               <div className="text-xs text-gray-400 pt-1">
                 {currentImageIndex + 1} / {allImages.length}
