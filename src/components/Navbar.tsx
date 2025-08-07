@@ -26,11 +26,11 @@ export default function Navbar() {
         
         {/* Navigation */}
         <nav className="flex justify-center">
-          <ul className="flex gap-8 font-light">
+          <ul className="flex flex-wrap justify-center gap-2 sm:gap-4 md:gap-6 lg:gap-8 font-light text-sm sm:text-base">
             <li>
               <Link 
                 href="/" 
-                className={`transition-colors ${
+                className={`transition-colors px-2 py-1 rounded ${
                   pathname === "/" 
                     ? "text-[#414141]" 
                     : "text-[#7B894C] hover:text-[#414141]"
@@ -42,7 +42,7 @@ export default function Navbar() {
             <li>
               <Link 
                 href="/available-flash" 
-                className={`transition-colors ${
+                className={`transition-colors px-2 py-1 rounded ${
                   pathname === "/available-flash" 
                     ? "text-[#414141]" 
                     : "text-[#7B894C] hover:text-[#414141]"
@@ -54,7 +54,7 @@ export default function Navbar() {
             <li>
               <Link 
                 href="/booking-and-availability" 
-                className={`transition-colors ${
+                className={`transition-colors px-2 py-1 rounded ${
                   pathname === "/booking-and-availability" 
                     ? "text-[#414141]" 
                     : "text-[#7B894C] hover:text-[#414141]"
@@ -66,7 +66,7 @@ export default function Navbar() {
             <li>
               <Link 
                 href="/questions" 
-                className={`transition-colors ${
+                className={`transition-colors px-2 py-1 rounded ${
                   pathname === "/questions" 
                     ? "text-[#414141]" 
                     : "text-[#7B894C] hover:text-[#414141]"
@@ -78,7 +78,7 @@ export default function Navbar() {
             <li>
               <Link 
                 href="/consent-form" 
-                className={`transition-colors ${
+                className={`transition-colors px-2 py-1 rounded ${
                   pathname === "/consent-form" 
                     ? "text-[#414141]" 
                     : "text-[#7B894C] hover:text-[#414141]"
