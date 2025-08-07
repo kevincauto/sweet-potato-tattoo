@@ -80,6 +80,12 @@ export default function GalleryAdminPage() {
         >
           Gallery
         </Link>
+        <Link 
+          href="/admin/faq" 
+          className="px-4 py-2 rounded-lg border bg-white text-black hover:bg-gray-100"
+        >
+          FAQ
+        </Link>
       </div>
       
       <form

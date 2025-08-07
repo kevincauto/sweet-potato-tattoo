@@ -1,162 +1,97 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+interface FAQItem {
+  id: string;
+  question: string;
+  answer: string;
+  order: number;
+}
 
 export default function QuestionsPage() {
   const [openQuestion, setOpenQuestion] = useState<string | null>(null);
+  const [faqItems, setFaqItems] = useState<FAQItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const toggleQuestion = (questionId: string) => {
     setOpenQuestion(openQuestion === questionId ? null : questionId);
   };
+
+  useEffect(() => {
+    const fetchFAQItems = async () => {
+      try {
+        const response = await fetch('/api/faq');
+        if (response.ok) {
+          const data = await response.json();
+          // Sort by order to ensure correct display order
+          const sortedItems = (data.items || []).sort((a: FAQItem, b: FAQItem) => a.order - b.order);
+          setFaqItems(sortedItems);
+        } else {
+          console.error('Failed to fetch FAQ items');
+          setFaqItems([]);
+        }
+      } catch (error) {
+        console.error('Error fetching FAQ items:', error);
+        setFaqItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFAQItems();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="container mx-auto p-4">
+        <h1 className="text-4xl font-light text-center my-8 text-[#414141]">Questions</h1>
+        <div className="max-w-4xl mx-auto text-center py-8">
+          <p className="text-gray-500">Loading questions...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="container mx-auto p-4">
       <h1 className="text-4xl font-light text-center my-8 text-[#414141]">Questions</h1>
       
       <div className="max-w-4xl mx-auto space-y-4">
-        <div className="bg-white rounded-lg shadow-sm border">
-          <button
-            onClick={() => toggleQuestion('custom')}
-            className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors text-[#414141] rounded-lg"
-          >
-            <h2 className="text-xl font-light">Do you do custom tattoo requests?</h2>
-            <span className="text-2xl transition-transform duration-200">
-              {openQuestion === 'custom' ? '−' : '+'}
-            </span>
-          </button>
-          {openQuestion === 'custom' && (
-            <div className="px-6 pb-4">
-              <div className="text-[#414141] leading-relaxed space-y-4">
-                <p>
-                <span className="font-semibold">Yes</span>, but I don&apos;t accept all custom requests. I work within a limited range of styles, and handpoked tattoos have a distinct look to them. Please make sure you like my work/styles before requesting a custom.
-                </p>
-                
-                <p className="font-semibold">Here is a list of what I will do and what I will not do:</p>
-                
-                <p className="font-semibold">I like to tattoo:</p>
-                <ul className="list-disc pl-6 space-y-1">
-                  <li>Plants, including flowers and vegetables</li>
-                  <li>Bones and shells</li>
-                  <li>Nuts and seeds</li>
-                  <li>Animals of all kinds (except pets, sorry)</li>
-                  <li>Stars and clouds</li>
-                  <li>Mythical creatures</li>
-                  <li>Fire</li>
-                  <li>Arrows and hands</li>
-                  <li>Insects/bugs? (I haven&apos;t done much of these and I&apos;m not sure yet if I like drawing those. I think it depends on the creature)</li>
-                </ul>
-                
-                <p className="font-semibold">I don&apos;t tattoo:</p>
-                <ul className="list-disc pl-6 space-y-1">
-                  <li>Man made objects</li>
-                  <li>Lettering/script</li>
-                  <li>Geometric designs</li>
-                  <li>Pets</li>
-                  <li>People/portraits</li>
-                  <li>Someone else&apos;s art or design</li>
-                  <li>Food</li>
-                </ul>
-                
-                <p className="font-semibold">Customized Flash:</p>
-                <p>
-                  If you like a flash piece but want to make some design adjustments, that&apos;s great, just email me about what you&apos;re thinking. If you like a flash piece but want it significantly bigger (like at least 3 inches bigger).
-                </p>
-                
-                <p className="font-semibold">Booking:</p>
-                <p>
-                  Email me at <a href="mailto:sweetpotatotattoo@gmail.com" className="text-[#7B894C] hover:underline">sweetpotatotattoo@gmail.com</a> with something like &ldquo;custom tattoo inquiry&rdquo; as the subject. In your email, please include tattoo reference images, the dimensions you&apos;re considering (examples: LxW inches; 3-5in), placement ideas, and your budget. If you are unsure of a few of these things, please provide as much information as you can. Size and budget ranges are also fine, but the tighter.
-                </p>
-                
-                <p className="font-semibold">Pricing:</p>
-                <p>Prices depend on size and intricacy of design.</p>
-                <ul className="list-disc pl-6 space-y-1">
-                  <li>Smaller than 1&rdquo;x1&rdquo; are $100 minimum.</li>
-                  <li>1&rdquo;x1&rdquo; - 2&rdquo;x3&rdquo; start at $120.</li>
-                  <li>Designs 2&rdquo;x3&rdquo; and larger start at $175.</li>
-                </ul>
-                
-                <p>
-                  I charge a drawing fee ($30-$100 depending on size/detail) in addition to the $50 deposit. The drawing fee is separate from the cost of the tattoo. When you inquire about a custom, I will give a quote on the drawing fee as well as the tattoo. The drawing fee includes the initial drawing as well as a revised drawing if necessary. Any revisions/re-drawings after the first one will be charged extra depending on the revisions asked for. I don&apos;t start working on the design until I receive the drawing fee; it can be sent via Venmo to @Josey-Lee-2.
-                </p>
-              </div>
+        {faqItems.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <p>No questions available at the moment.</p>
+          </div>
+        ) : (
+          faqItems.map((item) => (
+            <div key={item.id} className="bg-white rounded-lg shadow-sm border">
+              <button
+                onClick={() => toggleQuestion(item.id)}
+                className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors text-[#414141] rounded-lg"
+              >
+                <h2 className="text-xl font-light">{item.question}</h2>
+                <span className="text-2xl transition-transform duration-200">
+                  {openQuestion === item.id ? '−' : '+'}
+                </span>
+              </button>
+                             {openQuestion === item.id && (
+                 <div className="px-6 pb-4">
+                   <div 
+                     className="text-[#414141] leading-relaxed space-y-4"
+                     dangerouslySetInnerHTML={{ 
+                       __html: item.answer
+                         .replace(/\n/g, '<br />')
+                         .replace(/className="([^"]*)"/g, 'class="$1"')
+                         .replace(/<span className="font-semibold">/g, '<span class="font-semibold">')
+                         .replace(/<span className="font-bold">/g, '<span class="font-bold">')
+                         .replace(/<a href="([^"]*)" className="([^"]*)">/g, '<a href="$1" class="$2">')
+                     }}
+                   />
+                 </div>
+               )}
             </div>
-          )}
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border">
-          <button
-            onClick={() => toggleQuestion('touchups')}
-            className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors text-[#414141] rounded-lg"
-          >
-            <h2 className="text-xl font-light">How do you handle touch-ups?</h2>
-            <span className="text-2xl transition-transform duration-200">
-              {openQuestion === 'touchups' ? '−' : '+'}
-            </span>
-          </button>
-          {openQuestion === 'touchups' && (
-            <div className="px-6 pb-4">
-              <div className="text-[#414141] leading-relaxed space-y-4">
-                <p>
-                  Sometimes, for various reasons, ink falls out of a tattoo. It can happen during the healing process or over time, long after the tattoo has healed. If this happens, you can come back to me for a touch-up. During this appointment, I will fill in the places where your tattoo is missing ink.
-                </p>
-                
-                <p>
-                  For scheduling a touch-up, please email me at <a href="mailto:sweetpotatotattoo@gmail.com" className="text-[#7B894C] hover:underline">sweetpotatotattoo@gmail.com</a> with &ldquo;touch-up&rdquo; in the subject line. Let me know dates and times that work for you and attach a picture of the tattoo. I will then get back to you to work out a day/time.
-                </p>
-                
-                <p>
-                  It is possible to do a touch-up at the end of a tattoo appointment, but please email me a picture of it prior to the appointment so I can see if we can fit it in.
-                </p>
-                
-                <p className="font-semibold">
-                  Touch-ups are free of charge.
-                </p>
-                
-                <p>
-                  If you need to cancel or reschedule a touch-up, please let me know as soon as possible. Last minute cancellations or reschedulings are not fun, but understandable if you communicate them to me. No shows with zero communication are just unkind, so if you don&apos;t show up and don&apos;t communicate with me in a timely manner, I may choose not to work with you again.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border">
-          <button
-            onClick={() => toggleQuestion('location')}
-            className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors text-[#414141] rounded-lg"
-          >
-            <h2 className="text-xl font-light">Where are you located? How do I get there?</h2>
-            <span className="text-2xl transition-transform duration-200">
-              {openQuestion === 'location' ? '−' : '+'}
-            </span>
-          </button>
-          {openQuestion === 'location' && (
-            <div className="px-6 pb-4">
-              <div className="text-[#414141] leading-relaxed space-y-4">
-                <div>
-                  <p className="font-bold">Location:</p>
-                  <p>1916 Poplar St, Apt 2N<br />Philadelphia, PA 19130</p>
-                </div>
-                <div>
-                  <p className="font-bold">Building entry:</p>
-                  <p>Use the Uber St door marked &quot;2N / 2S&quot; and text 267-528-7752 upon arrival.</p>
-                </div>
-                <div>
-                  <p className="font-bold">Parking:</p>
-                  <p>Free street parking nearby—check signs for time limits, be ready for parallel parking, and expect a short walk. Consider garages/lots or transit if parallel parking is a concern.</p>
-                </div>
-                <div>
-                  <p className="font-bold">Public transit:</p>
-                  <ul className="list-disc pl-6 space-y-1">
-                    <li>19th & Girard trolley (short walk)</li>
-                    <li>Broad Street Line – Girard Station (≈ 10 min walk)</li>
-                    <li>Bus routes 33 & 61 stop nearby</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+          ))
+        )}
       </div>
     </main>
   );
