@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { PutBlobResult } from '@vercel/blob';
-import Image from 'next/image';
 import Link from 'next/link';
+import DraggableImageGrid from '../../components/DraggableImageGrid';
 
 export default function AdminPage() {
   const fileRef = useRef<HTMLInputElement>(null);
@@ -32,6 +32,22 @@ export default function AdminPage() {
       method: 'DELETE',
     });
     fetchImages();
+  }
+
+  async function handleEditCaption(url: string, caption: string) {
+    await fetch(
+      `/api/upload/flash?url=${encodeURIComponent(url)}&caption=${encodeURIComponent(caption)}`,
+      { method: 'PUT' }
+    );
+    setImages((imgs) =>
+      imgs.map((it) =>
+        it.url === url ? { ...it, caption } : it
+      )
+    );
+  }
+
+  function handleReorder(newOrder: ImgItem[]) {
+    setImages(newOrder);
   }
 
   return (
@@ -130,61 +146,22 @@ export default function AdminPage() {
         </div>
       )}
 
-      <h2 className="text-2xl font-bold mb-4">Available Flash Images</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {images.map((image) => (
-          <div key={image.url} className="relative flex flex-col items-center">
-            <Image
-              src={image.url}
-              alt={image.caption ?? 'image'}
-              width={300}
-              height={200}
-              className="rounded-lg object-cover w-full" 
-            />
-            {editingUrl === image.url ? (
-              <textarea
-                value={tempCaption}
-                rows={3}
-                autoFocus
-                onChange={(e) => setTempCaption(e.target.value)}
-                onBlur={() => {
-                  // save
-                  fetch(
-                    `/api/upload/flash?url=${encodeURIComponent(image.url)}&caption=${encodeURIComponent(
-                      tempCaption
-                    )}`,
-                    { method: 'PUT' }
-                  );
-                  setImages((imgs) =>
-                    imgs.map((it) =>
-                      it.url === image.url ? { ...it, caption: tempCaption } : it
-                    )
-                  );
-                  setEditingUrl(null);
-                }}
-                className="text-xs w-full mt-1 bg-transparent border rounded p-1"
-              />
-            ) : (
-              <p
-                className="text-xs text-center mt-1 whitespace-pre-line cursor-pointer"
-                title={image.caption}
-                onClick={() => {
-                  setEditingUrl(image.url);
-                  setTempCaption(image.caption || '');
-                }}
-              >
-                {image.caption || 'Add caption'}
-              </p>
-            )}
-            <button
-              onClick={() => handleDelete(image.url)}
-              className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
-            >
-              &times;
-            </button>
-          </div>
-        ))}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold">Available Flash Images</h2>
+        <p className="text-sm text-gray-600">Drag and drop to reorder images</p>
       </div>
+      
+      <DraggableImageGrid
+        images={images}
+        onReorder={handleReorder}
+        onDelete={handleDelete}
+        onEditCaption={handleEditCaption}
+        editingUrl={editingUrl}
+        setEditingUrl={setEditingUrl}
+        tempCaption={tempCaption}
+        setTempCaption={setTempCaption}
+        collection="flash"
+      />
     </main>
   );
 } 
