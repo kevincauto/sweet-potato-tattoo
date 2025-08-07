@@ -8,7 +8,7 @@ import { kv } from '@vercel/kv';
 // ───────────────────────── POST /api/upload/:collection
 export async function POST(request: Request, { params }: any) {
   const { collection } = params;
-  const allowed = ['flash', 'gallery'];
+  const allowed = ['designs', 'gallery'];
   if (!allowed.includes(collection)) {
     return NextResponse.json({ error: 'Invalid collection' }, { status: 400 });
   }
@@ -46,7 +46,7 @@ export async function POST(request: Request, { params }: any) {
 // ───────────────────────── GET /api/upload/:collection
 export async function GET(_: Request, { params }: any) {
   const { collection } = params;
-  const allowed = ['flash', 'gallery'];
+  const allowed = ['designs', 'gallery'];
   if (!allowed.includes(collection)) return NextResponse.json({ blobs: [] });
 
   const urls: string[] = await kv.lrange(`${collection}-images`, 0, -1);
@@ -96,7 +96,7 @@ export async function PUT(request: Request) {
 // ───────────────────────── PATCH /api/upload/:collection (for reordering)
 export async function PATCH(request: Request, { params }: any) {
   const { collection } = params;
-  const allowed = ['flash', 'gallery'];
+  const allowed = ['designs', 'gallery'];
   if (!allowed.includes(collection)) {
     return NextResponse.json({ error: 'Invalid collection' }, { status: 400 });
   }
@@ -124,7 +124,7 @@ export async function PATCH(request: Request, { params }: any) {
 // ───────────────────────── DELETE /api/upload/:collection
 export async function DELETE(request: Request, { params }: any) {
   const { collection } = params;
-  const allowed = ['flash', 'gallery'];
+  const allowed = ['designs', 'gallery'];
   if (!allowed.includes(collection)) {
     return NextResponse.json({ error: 'Invalid collection' }, { status: 400 });
   }

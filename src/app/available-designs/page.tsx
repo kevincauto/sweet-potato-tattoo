@@ -1,14 +1,17 @@
 import { kv } from '@vercel/kv';
 import { list } from '@vercel/blob';
-import FlashGrid from '../../components/FlashGrid';
+import DesignsGrid from '../../components/DesignsGrid';
 
 export const metadata = {
-  title: 'Available Flash',
+  title: 'Available Designs',
 };
 
-export default async function AvailableFlashPage() {
+export default async function AvailableDesignsPage() {
   // Get URLs from KV in the correct order
-  let imageUrls = await kv.lrange('flash-images', 0, -1);
+  let imageUrls = await kv.lrange('designs-images', 0, -1);
+  if (imageUrls.length === 0) {
+    imageUrls = await kv.lrange('flash-images', 0, -1);
+  }
   if (imageUrls.length === 0) {
     imageUrls = await kv.lrange('images', 0, -1);
   }
@@ -28,8 +31,8 @@ export default async function AvailableFlashPage() {
 
   return (
     <main className="container mx-auto p-4">
-      <h1 className="text-4xl font-light text-center my-8 text-[#414141]">Available Flash</h1>
-      <FlashGrid 
+      <h1 className="text-4xl font-light text-center my-8 text-[#414141]">Available Designs</h1>
+      <DesignsGrid 
         images={existingBlobs}
         captionsMap={captionsMap}
       />

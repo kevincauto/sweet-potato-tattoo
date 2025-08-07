@@ -69,10 +69,10 @@ export default function GalleryAdminPage() {
       {/* Navigation */}
       <div className="flex justify-center gap-4 mb-6">
         <Link 
-          href="/admin/flash" 
+          href="/admin/designs" 
           className="px-4 py-2 rounded-lg border bg-white text-black hover:bg-gray-100"
         >
-          Available Flash
+          Available Designs
         </Link>
         <Link 
           href="/admin/gallery" 

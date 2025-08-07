@@ -5,21 +5,30 @@ import type { PutBlobResult } from '@vercel/blob';
 import Link from 'next/link';
 import DraggableImageGrid from '../../../components/DraggableImageGrid';
 
-export default function FlashAdminPage() {
+export default function DesignsAdminPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   interface ImgItem { url: string; caption?: string }
   const [images, setImages] = useState<ImgItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingUrl, setEditingUrl] = useState<string | null>(null);
   const [tempCaption, setTempCaption] = useState('');
 
   const fetchImages = useCallback(async () => {
-    const response = await fetch('/api/upload/flash');
-    if (response.ok) {
-      const data = (await response.json()) as { items: ImgItem[] };
-      setImages(data.items);
-    } else {
-      setImages([]); // Clear images on error or if collection is empty
+    setLoading(true);
+    try {
+      const response = await fetch('/api/upload/designs');
+      if (response.ok) {
+        const data = (await response.json()) as { items: ImgItem[] };
+        setImages(data.items || []);
+      } else {
+        setImages([]); // Clear images on error or if collection is empty
+      }
+    } catch (error) {
+      console.error('Error fetching images:', error);
+      setImages([]);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -29,7 +38,7 @@ export default function FlashAdminPage() {
 
   async function handleDelete(url: string) {
     try {
-      const response = await fetch(`/api/upload/flash?url=${encodeURIComponent(url)}`, {
+      const response = await fetch(`/api/upload/designs?url=${encodeURIComponent(url)}`, {
         method: 'DELETE',
       });
       
@@ -47,8 +56,8 @@ export default function FlashAdminPage() {
   }
 
   async function handleEditCaption(url: string, caption: string) {
-    await fetch(
-      `/api/upload/flash?url=${encodeURIComponent(url)}&caption=${encodeURIComponent(caption)}`,
+          await fetch(
+        `/api/upload/designs?url=${encodeURIComponent(url)}&caption=${encodeURIComponent(caption)}`,
       { method: 'PUT' }
     );
     setImages((imgs) =>
@@ -64,15 +73,15 @@ export default function FlashAdminPage() {
 
   return (
     <main className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold text-center my-8">Flash Admin</h1>
+      <h1 className="text-4xl font-bold text-center my-8">Designs Admin</h1>
       
       {/* Navigation */}
       <div className="flex justify-center gap-4 mb-6">
         <Link 
-          href="/admin/flash" 
+          href="/admin/designs" 
           className="px-4 py-2 rounded-lg border bg-blue-500 text-white"
         >
-          Available Flash
+          Available Designs
         </Link>
         <Link 
           href="/admin/gallery" 
@@ -98,8 +107,8 @@ export default function FlashAdminPage() {
           if (!files || files.length === 0) return;
 
           for (const file of Array.from(files)) {
-            const response = await fetch(
-              `/api/upload/flash?filename=${encodeURIComponent(file.name)}`,
+                          const response = await fetch(
+                `/api/upload/designs?filename=${encodeURIComponent(file.name)}`,
               {
                 method: 'POST',
                 body: file,
@@ -159,11 +168,16 @@ export default function FlashAdminPage() {
       )}
 
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">Available Flash Images</h2>
+        <h2 className="text-2xl font-bold">Available Design Images</h2>
         <p className="text-sm text-gray-600">Drag and drop to reorder images</p>
       </div>
       
-      <DraggableImageGrid
+      {loading ? (
+        <div className="text-center py-8">
+          <p className="text-gray-600">Loading images...</p>
+        </div>
+      ) : (
+        <DraggableImageGrid
         images={images}
         onReorder={handleReorder}
         onDelete={handleDelete}
@@ -172,8 +186,9 @@ export default function FlashAdminPage() {
         setEditingUrl={setEditingUrl}
         tempCaption={tempCaption}
         setTempCaption={setTempCaption}
-        collection="flash"
-      />
+        collection="designs"
+        />
+      )}
     </main>
   );
 }

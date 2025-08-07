@@ -17,7 +17,7 @@ interface DraggableImageGridProps {
   setEditingUrl: (url: string | null) => void;
   tempCaption: string;
   setTempCaption: (caption: string) => void;
-  collection: 'flash' | 'gallery';
+  collection: 'designs' | 'gallery';
 }
 
 export default function DraggableImageGrid({
@@ -112,7 +112,7 @@ export default function DraggableImageGrid({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {images.map((image, index) => (
+      {images?.map((image, index) => (
         <div
           key={image.url}
           ref={dragRef}

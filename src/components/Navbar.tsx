@@ -41,14 +41,14 @@ export default function Navbar() {
             </li>
             <li>
               <Link 
-                href="/available-flash" 
+                href="/available-designs" 
                 className={`transition-colors px-2 py-1 rounded ${
-                  pathname === "/available-flash" 
+                  pathname === "/available-designs" 
                     ? "text-[#414141]" 
                     : "text-[#7B894C] hover:text-[#414141]"
                 }`}
               >
-                Available Flash
+                Available Designs
               </Link>
             </li>
             <li>
