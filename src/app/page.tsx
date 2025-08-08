@@ -22,7 +22,7 @@ export default async function Home() {
   return (
     <>
       {/* Newsletter section - right after navigation */}
-      <NewsletterSection />
+      <NewsletterSection priority />
       
       {/* Gallery section */}
       <main className="flex flex-1 flex-col items-center justify-center p-4">

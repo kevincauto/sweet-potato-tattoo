@@ -1,17 +1,26 @@
 import { kv } from '@vercel/kv';
 import { list } from '@vercel/blob';
-import DesignsGrid from '../../components/DesignsGrid';
+import FlashGrid from '../../components/FlashGrid';
 
 export const metadata = {
-  title: 'Available Designs',
+  title: 'Available Flash',
 };
 
-export default async function AvailableDesignsPage() {
+export default async function AvailableFlashPage() {
   // Get URLs from KV in the correct order
-  let imageUrls = await kv.lrange('designs-images', 0, -1);
+  let imageUrls = await kv.lrange('flash-images', 0, -1);
+
+  // Fallback: if flash is empty, pull from any previous designs key and migrate back to flash
   if (imageUrls.length === 0) {
-    imageUrls = await kv.lrange('flash-images', 0, -1);
+    const designsUrls = await kv.lrange('designs-images', 0, -1);
+    if (designsUrls.length > 0) {
+      await kv.del('flash-images');
+      await kv.rpush('flash-images', ...designsUrls);
+      imageUrls = designsUrls;
+    }
   }
+
+  // Legacy fallback (very old key)
   if (imageUrls.length === 0) {
     imageUrls = await kv.lrange('images', 0, -1);
   }
@@ -29,12 +38,17 @@ export default async function AvailableDesignsPage() {
   const captionsRaw = (await kv.hgetall('captions')) as Record<string, string> | null;
   const captionsMap = captionsRaw ?? {};
 
+  // Get categories for flash images (url -> category)
+  const categoriesRaw = (await kv.hgetall('flash-categories')) as Record<string, string> | null;
+  const categoriesMap = categoriesRaw ?? {};
+
   return (
     <main className="container mx-auto p-4">
-      <h1 className="text-4xl font-light text-center my-8 text-[#414141]">Available Designs</h1>
-      <DesignsGrid 
+      <h1 className="text-4xl font-light text-center my-8 text-[#414141]">Available Flash</h1>
+      <FlashGrid 
         images={existingBlobs}
         captionsMap={captionsMap}
+        categoriesMap={categoriesMap}
       />
     </main>
   );

@@ -7,8 +7,8 @@ import { kv } from '@vercel/kv';
 
 // ───────────────────────── POST /api/upload/:collection
 export async function POST(request: Request, { params }: any) {
-  const { collection } = params;
-  const allowed = ['designs', 'gallery'];
+  const { collection } = await params;
+  const allowed = ['flash', 'gallery'];
   if (!allowed.includes(collection)) {
     return NextResponse.json({ error: 'Invalid collection' }, { status: 400 });
   }
@@ -16,6 +16,7 @@ export async function POST(request: Request, { params }: any) {
   const { searchParams } = new URL(request.url);
   const filename = searchParams.get('filename');
   const caption = searchParams.get('caption');
+  const category = searchParams.get('category');
   if (!filename || !request.body) {
     return NextResponse.json({ message: 'No file to upload.' }, { status: 400 });
   }
@@ -40,24 +41,31 @@ export async function POST(request: Request, { params }: any) {
   if (caption) {
     await kv.hset('captions', { [blob.url]: caption });
   }
+  // Save category for flash collection
+  if (collection === 'flash' && category) {
+    const allowedCategories = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash'];
+    if (allowedCategories.includes(category)) {
+      await kv.hset('flash-categories', { [blob.url]: category });
+    }
+  }
   return NextResponse.json(blob);
 }
 
 // ───────────────────────── GET /api/upload/:collection
 export async function GET(_: Request, { params }: any) {
-  const { collection } = params;
-  const allowed = ['designs', 'gallery'];
+  const { collection } = await params;
+  const allowed = ['flash', 'gallery'];
   if (!allowed.includes(collection)) return NextResponse.json({ blobs: [] });
 
   let urls: string[] = await kv.lrange(`${collection}-images`, 0, -1);
   
-  // For designs collection, check for old flash-images key as fallback
-  if (collection === 'designs' && urls.length === 0) {
-    urls = await kv.lrange('flash-images', 0, -1);
-    // If we found data in the old key, migrate it to the new key
+  // For flash collection, check for designs-images key as fallback (in case of prior rename)
+  if (collection === 'flash' && urls.length === 0) {
+    urls = await kv.lrange('designs-images', 0, -1);
+    // If we found data in the designs key, migrate it back to flash
     if (urls.length > 0) {
-      await kv.del('flash-images');
-      await kv.rpush('designs-images', ...urls);
+      await kv.del('designs-images');
+      await kv.rpush('flash-images', ...urls);
     }
   }
   
@@ -87,7 +95,11 @@ export async function GET(_: Request, { params }: any) {
   const items = await Promise.all(
     orderedBlobs.map(async (b) => {
       const caption = (await kv.hget('captions', b.url)) as string | null;
-      return { url: b.url, caption: caption || '' };
+      let category: string | null = null;
+      if (collection === 'flash') {
+        category = (await kv.hget('flash-categories', b.url)) as string | null;
+      }
+      return { url: b.url, caption: caption || '', category: category || '' };
     })
   );
 
@@ -99,22 +111,47 @@ export async function PUT(request: Request) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get('url');
   const caption = searchParams.get('caption') || '';
+  const category = searchParams.get('category');
+  const collection = searchParams.get('collection');
   if (!url) return NextResponse.json({ error: 'url required' }, { status: 400 });
-  await kv.hset('captions', { [url]: caption });
+  if (caption) {
+    await kv.hset('captions', { [url]: caption });
+  }
+  if (collection === 'flash' && category) {
+    const allowedCategories = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash'];
+    if (allowedCategories.includes(category)) {
+      await kv.hset('flash-categories', { [url]: category });
+    }
+  }
   return NextResponse.json({ ok: true });
 }
 
 // ───────────────────────── PATCH /api/upload/:collection (for reordering)
 export async function PATCH(request: Request, { params }: any) {
-  const { collection } = params;
-  const allowed = ['designs', 'gallery'];
+  const { collection } = await params;
+  const allowed = ['flash', 'gallery'];
   if (!allowed.includes(collection)) {
     return NextResponse.json({ error: 'Invalid collection' }, { status: 400 });
   }
 
   try {
-    const { urls } = await request.json();
+    const body = await request.json();
+    const { urls, action } = body as { urls?: string[]; action?: 'shuffle' };
     
+    if (action === 'shuffle') {
+      const existing = await kv.lrange(`${collection}-images`, 0, -1);
+      // Fisher-Yates shuffle
+      for (let i = existing.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [existing[i], existing[j]] = [existing[j], existing[i]];
+      }
+      await kv.del(`${collection}-images`);
+      if (existing.length > 0) {
+        await kv.rpush(`${collection}-images`, ...existing);
+      }
+      return NextResponse.json({ ok: true, message: 'Shuffled once' });
+    }
+
     if (!Array.isArray(urls)) {
       return NextResponse.json({ error: 'urls array required' }, { status: 400 });
     }
@@ -134,8 +171,8 @@ export async function PATCH(request: Request, { params }: any) {
 
 // ───────────────────────── DELETE /api/upload/:collection
 export async function DELETE(request: Request, { params }: any) {
-  const { collection } = params;
-  const allowed = ['designs', 'gallery'];
+  const { collection } = await params;
+  const allowed = ['flash', 'gallery'];
   if (!allowed.includes(collection)) {
     return NextResponse.json({ error: 'Invalid collection' }, { status: 400 });
   }

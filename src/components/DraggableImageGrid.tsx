@@ -6,6 +6,7 @@ import Image from 'next/image';
 interface ImgItem {
   url: string;
   caption?: string;
+  category?: string;
 }
 
 interface DraggableImageGridProps {
@@ -13,11 +14,14 @@ interface DraggableImageGridProps {
   onReorder: (newOrder: ImgItem[]) => void;
   onDelete: (url: string) => void;
   onEditCaption: (url: string, caption: string) => void;
+  onEditCategory?: (url: string, category: string) => void;
   editingUrl: string | null;
   setEditingUrl: (url: string | null) => void;
   tempCaption: string;
   setTempCaption: (caption: string) => void;
-  collection: 'designs' | 'gallery';
+  collection: 'flash' | 'gallery';
+  categories?: string[];
+  showCategoryControl?: boolean;
 }
 
 export default function DraggableImageGrid({
@@ -25,11 +29,14 @@ export default function DraggableImageGrid({
   onReorder,
   onDelete,
   onEditCaption,
+  onEditCategory,
   editingUrl,
   setEditingUrl,
   tempCaption,
   setTempCaption,
-  collection
+  collection,
+  categories = [],
+  showCategoryControl = false
 }: DraggableImageGridProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -161,6 +168,23 @@ export default function DraggableImageGrid({
             >
               {image.caption || 'Add caption'}
             </p>
+          )}
+          {/* Category control for flash collection */}
+          {showCategoryControl && collection === 'flash' && (
+            <div className="w-full mt-1">
+              <select
+                className="w-full text-[11px] border rounded p-1"
+                value={image.category || ''}
+                onChange={(e) => onEditCategory && onEditCategory(image.url, e.target.value)}
+              >
+                <option value="">No category</option>
+                {categories.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
           <button
             onClick={() => handleDeleteClick(image.url)}

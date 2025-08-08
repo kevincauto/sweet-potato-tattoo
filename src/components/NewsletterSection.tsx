@@ -3,7 +3,11 @@
 import { useState } from 'react';
 import Image from 'next/image';
 
-export default function NewsletterSection() {
+type NewsletterSectionProps = {
+  priority?: boolean;
+};
+
+export default function NewsletterSection({ priority = false }: NewsletterSectionProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,6 +60,9 @@ export default function NewsletterSection() {
           src="/fox-up.jpeg"
           alt="Sparrow background"
           fill
+          sizes="100vw"
+          priority={priority}
+          fetchPriority={priority ? 'high' : 'auto'}
           className="object-cover"
         />
       </div>

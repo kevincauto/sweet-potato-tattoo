@@ -129,20 +129,20 @@ export default function FAQAdminPage() {
       {/* Navigation */}
       <div className="flex justify-center gap-4 mb-6">
         <Link 
-          href="/admin/designs" 
-          className="px-4 py-2 rounded-lg border bg-white text-black hover:bg-gray-100"
+          href="/admin/flash" 
+          className="px-4 py-2 rounded-lg border border-[#7B894C] text-[#7B894C] bg-white hover:bg-[#7B894C] hover:text-white transition-colors"
         >
-          Available Designs
+          Available Flash
         </Link>
         <Link 
           href="/admin/gallery" 
-          className="px-4 py-2 rounded-lg border bg-white text-black hover:bg-gray-100"
+          className="px-4 py-2 rounded-lg border border-[#7B894C] text-[#7B894C] bg-white hover:bg-[#7B894C] hover:text-white transition-colors"
         >
           Gallery
         </Link>
         <Link 
           href="/admin/faq" 
-          className="px-4 py-2 rounded-lg border bg-blue-500 text-white"
+          className="px-4 py-2 rounded-lg border bg-[#7B894C] text-white border-[#7B894C] hover:bg-[#6A7A3F] transition-colors"
         >
           FAQ
         </Link>

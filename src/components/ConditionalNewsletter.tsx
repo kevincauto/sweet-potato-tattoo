@@ -11,5 +11,5 @@ export default function ConditionalNewsletter() {
     return null;
   }
 
-  return <NewsletterSection />;
+  return <NewsletterSection priority={false} />;
 }
