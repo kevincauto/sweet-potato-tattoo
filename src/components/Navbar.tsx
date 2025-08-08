@@ -53,9 +53,9 @@ export default function Navbar() {
             </li>
             <li>
               <Link 
-                href="/booking-and-availability" 
+                href="/booking" 
                 className={`transition-colors px-2 py-1 rounded ${
-                  pathname === "/booking-and-availability" 
+                  pathname === "/booking" 
                     ? "text-[#414141]" 
                     : "text-[#7B894C] hover:text-[#414141]"
                 }`}
@@ -65,14 +65,14 @@ export default function Navbar() {
             </li>
             <li>
               <Link 
-                href="/questions" 
+                href="/faq" 
                 className={`transition-colors px-2 py-1 rounded ${
-                  pathname === "/questions" 
+                  pathname === "/faq" 
                     ? "text-[#414141]" 
                     : "text-[#7B894C] hover:text-[#414141]"
                 }`}
               >
-                Questions
+                FAQ
               </Link>
             </li>
             <li>
