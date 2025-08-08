@@ -30,7 +30,9 @@ export default function FlashCTA({ imageUrls }: FlashCTAProps) {
                       fill
                       sizes="(max-width: 640px) 45vw, (max-width: 768px) 35vw, (max-width: 1024px) 28vw, 22vw"
                       className="object-cover"
-                      priority={i === 0}
+                      loading="eager"
+                      priority={i < 4}
+                      unoptimized
                     />
                   </div>
                 ))}
