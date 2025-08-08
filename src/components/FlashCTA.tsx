@@ -6,9 +6,10 @@ import Link from "next/link";
 
 type FlashCTAProps = {
   imageUrls: string[];
+  variant?: 'to-flash' | 'to-booking';
 };
 
-export default function FlashCTA({ imageUrls }: FlashCTAProps) {
+export default function FlashCTA({ imageUrls, variant = 'to-flash' }: FlashCTAProps) {
   const images = useMemo(() => imageUrls.slice(0, 20), [imageUrls]);
 
   if (images.length === 0) return null;
@@ -44,15 +45,17 @@ export default function FlashCTA({ imageUrls }: FlashCTAProps) {
           {/* Content */}
           <div className="relative z-10 flex items-center justify-center h-full px-4">
             <div className="bg-white/95 rounded-lg shadow-sm max-w-3xl w-full mx-4 p-6 text-center">
-              <h2 className="text-xl sm:text-2xl font-light text-[#414141] mb-4">
-                Check out the available flash designs!
-              </h2>
-              <Link
-                href="/available-flash"
-                className="inline-block px-6 py-3 rounded-lg bg-[#7B894C] text-white hover:bg-[#6A7A3F] transition-colors"
-              >
-                View Available Flash
-              </Link>
+              {variant === 'to-flash' ? (
+                <>
+                  <h2 className="text-xl sm:text-2xl font-light text-[#414141] mb-4">Check out the available flash designs!</h2>
+                  <Link href="/available-flash" className="inline-block px-6 py-3 rounded-lg bg-[#7B894C] text-white hover:bg-[#6A7A3F] transition-colors">View Available Flash</Link>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl sm:text-2xl font-light text-[#414141] mb-4">Love one of the designs? Let&apos;s book it!</h2>
+                  <Link href="/booking" className="inline-block px-6 py-3 rounded-lg bg-[#7B894C] text-white hover:bg-[#6A7A3F] transition-colors">Book Your Appointment</Link>
+                </>
+              )}
             </div>
           </div>
         </div>

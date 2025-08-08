@@ -1,6 +1,7 @@
 import { kv } from '@vercel/kv';
 import { list } from '@vercel/blob';
 import FlashGrid from '../../components/FlashGrid';
+import FlashCTA from '../../components/FlashCTA';
 
 export const metadata = {
   title: 'Available Flash',
@@ -55,6 +56,10 @@ export default async function AvailableFlashPage() {
         captionsMap={captionsMap}
         categoriesMap={categoriesMap}
       />
+      {/* Full-bleed CTA below the grid */}
+      <div className="mt-8">
+        <FlashCTA imageUrls={imageUrls} variant="to-booking" />
+      </div>
     </main>
   );
 }
