@@ -33,15 +33,17 @@ export default function GalleryGrid({ images, captionsMap }: GalleryGridProps) {
         {images.map((blob: BlobData, index: number) => (
           <div 
             key={index} 
-            className="relative group aspect-square overflow-hidden rounded-lg cursor-pointer"
+            className="relative group aspect-[4/5] overflow-hidden rounded-xl cursor-pointer bg-black border border-gray-800 shadow-sm"
             onClick={() => openModal(index)}
           >
-            <Image
-              src={blob.url}
-              alt={`Gallery image ${index + 1}`}
-              fill
-              className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-50"
-            />
+            <div className="absolute inset-0 p-2 sm:p-3">
+              <Image
+                src={blob.url}
+                alt={`Gallery image ${index + 1}`}
+                fill
+                className="object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+              />
+            </div>
             {captionsMap[blob.url] && (
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">
                 <p className="text-white text-sm text-center leading-relaxed drop-shadow-lg whitespace-pre-line">
