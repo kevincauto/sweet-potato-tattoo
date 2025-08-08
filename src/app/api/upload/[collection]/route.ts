@@ -43,7 +43,7 @@ export async function POST(request: Request, { params }: any) {
   }
   // Save category for flash collection
   if (collection === 'flash' && category) {
-    const allowedCategories = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash'];
+    const allowedCategories = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash', 'Discount Flash'];
     if (allowedCategories.includes(category)) {
       await kv.hset('flash-categories', { [blob.url]: category });
     }
@@ -118,7 +118,7 @@ export async function PUT(request: Request) {
     await kv.hset('captions', { [url]: caption });
   }
   if (collection === 'flash' && category) {
-    const allowedCategories = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash'];
+    const allowedCategories = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash', 'Discount Flash'];
     if (allowedCategories.includes(category)) {
       await kv.hset('flash-categories', { [url]: category });
     }

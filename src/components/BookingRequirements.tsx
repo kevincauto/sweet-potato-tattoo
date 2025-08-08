@@ -98,54 +98,7 @@ export default function BookingRequirements() {
         </div>
       )
     },
-    {
-      id: 'studio',
-      title: 'Day-Of Appointment',
-      content: (
-        <div className="space-y-4">
-          <div>
-            <p className="font-bold">Building entry:</p>
-            <p>Use the Uber St door marked &quot;2N / 2S&quot; and text 267-528-7752 upon arrival.</p>
-          </div>
-          <div>
-            <p className="font-bold">Studio Details:</p>
-            <p>Private room inside the artist&apos;s apartment (shared with their partner). Please treat the space respectfully.</p>
-          </div>
-          <div>
-            <p className="font-bold">Studio rules:</p>
-            <ul className="list-disc pl-6 space-y-1">
-              <li>Shoes off once inside.</li>
-              <li>Consent form: Fill out via QR code on your phone; let the artist know in advance if you need a paper copy.</li>
-              <li>Background sound: Minimal; feel free to use your own headphones.</li>
-            </ul>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'transit',
-      title: 'Getting There (Parking & Transit)',
-      content: (
-        <div className="space-y-4">
-          <div>
-            <p className="font-bold">Location:</p>
-            <p>1916 Poplar St, Apt 2N<br />Philadelphia, PA 19130</p>
-          </div>
-          <div>
-            <p className="font-bold">Parking:</p>
-            <p>Free street parking nearby—check signs for time limits, be ready for parallel parking, and expect a short walk. Consider garages/lots or transit if parallel parking is a concern.</p>
-          </div>
-          <div>
-            <p className="font-bold">Public transit:</p>
-            <ul className="list-disc pl-6 space-y-1">
-              <li>19th & Girard trolley (short walk)</li>
-              <li>Broad Street Line – Girard Station (≈ 10 min walk)</li>
-              <li>Bus routes 33 & 61 stop nearby</li>
-            </ul>
-          </div>
-        </div>
-      )
-    },
+    
     {
       id: 'payment',
       title: 'Payment & Tips',

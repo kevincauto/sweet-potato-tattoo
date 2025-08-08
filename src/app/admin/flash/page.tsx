@@ -9,7 +9,7 @@ export default function FlashAdminPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   interface ImgItem { url: string; caption?: string; category?: string }
-  const CATEGORY_OPTIONS = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash'] as const;
+  const CATEGORY_OPTIONS = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash', 'Discount Flash'] as const;
   const [images, setImages] = useState<ImgItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingUrl, setEditingUrl] = useState<string | null>(null);

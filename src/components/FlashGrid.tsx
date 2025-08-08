@@ -20,7 +20,7 @@ interface FlashGridProps {
 export default function FlashGrid({ images, captionsMap, categoriesMap = {} }: FlashGridProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const categoryOptions = ['All', 'Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash'];
+  const categoryOptions = ['All', 'Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash', 'Discount Flash'];
 
   const viewItems = useMemo(() => {
     const withIndex = images.map((blob, index) => ({ blob, index }));
