@@ -2,10 +2,13 @@ import { kv } from '@vercel/kv';
 import { list } from '@vercel/blob';
 import NewsletterSection from '@/components/NewsletterSection';
 import GalleryGrid from '@/components/GalleryGrid';
+import FlashCTA from '@/components/FlashCTA';
 
 export default async function Home() {
   // Get gallery images in the correct order
   const imageUrls = await kv.lrange('gallery-images', 0, -1);
+  // Get flash images for CTA background
+  const flashUrls = await kv.lrange('flash-images', 0, -1);
   const { blobs } = await list();
   
   // Create a map of URL to blob for quick lookup
@@ -36,6 +39,8 @@ export default async function Home() {
           </div>
         </div>
       </main>
+      {/* Flash CTA - full-bleed under gallery, above footer */}
+      <FlashCTA imageUrls={flashUrls} />
     </>
   );
 }

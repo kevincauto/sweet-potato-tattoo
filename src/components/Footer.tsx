@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="p-4">
+    <footer className="pt-4 pb-8">
       <div className="container mx-auto flex flex-col items-center gap-4">
         <ul className="flex gap-8">
           <li>
@@ -14,8 +14,8 @@ export default function Footer() {
               aria-label="Instagram"
             >
               <svg
-                width="30"
-                height="30"
+                width="36"
+                height="36"
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -49,7 +49,7 @@ export default function Footer() {
             </Link>
           </li>
         </ul>
-        <div>
+        <div className="mb-6">
           <Link
             href="mailto:sweetpotatotattoo@gmail.com"
             className="hover:underline text-[#414141]"
