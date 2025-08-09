@@ -6,8 +6,8 @@ import NewsletterSection from './NewsletterSection';
 export default function ConditionalNewsletter() {
   const pathname = usePathname();
 
-  // Don't render on homepage, newsletter page, or available-flash page
-  if (pathname === '/' || pathname === '/newsletter' || pathname === '/available-flash') {
+  // Don't render on homepage, newsletter page, available-flash page, or booking page
+  if (pathname === '/' || pathname === '/newsletter' || pathname === '/available-flash' || pathname === '/booking') {
     return null;
   }
 

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { montserrat } from './fonts';
 import './globals.css';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import ConditionalFooter from '@/components/ConditionalFooter';
 import ConditionalNewsletter from '@/components/ConditionalNewsletter';
 
 export const metadata: Metadata = {
@@ -32,8 +32,9 @@ export default function RootLayout({
         <main className="flex-grow">
           {children}
         </main>
+        {/* Hide newsletter/footer on booking page for focus */}
         <ConditionalNewsletter />
-        <Footer />
+        <ConditionalFooter />
       </body>
     </html>
   );
