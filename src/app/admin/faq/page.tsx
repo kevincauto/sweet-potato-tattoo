@@ -153,7 +153,7 @@ export default function FAQAdminPage() {
         {!isAdding ? (
           <button
             onClick={() => setIsAdding(true)}
-            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+            className="bg-[#7B894C] text-white px-4 py-2 rounded-lg hover:bg-[#6A7A3F] transition-colors"
           >
             + Add New FAQ Item
           </button>
@@ -190,7 +190,7 @@ export default function FAQAdminPage() {
               <div className="flex gap-2">
                 <button
                   onClick={handleAddItem}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                  className="bg-[#7B894C] text-white px-4 py-2 rounded-lg hover:bg-[#6A7A3F] transition-colors"
                 >
                   Add FAQ Item
                 </button>
