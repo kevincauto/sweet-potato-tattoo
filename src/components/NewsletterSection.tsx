@@ -57,7 +57,7 @@ export default function NewsletterSection({ priority = false }: NewsletterSectio
       {/* Background image using Next.js Image */}
       <div className="absolute inset-0">
         <Image
-          src="/spain-mountain.jpeg"
+          src="/fuzzy1.jpg"
           alt="Sparrow background"
           fill
           sizes="100vw"
@@ -66,6 +66,8 @@ export default function NewsletterSection({ priority = false }: NewsletterSectio
           className="object-cover"
         />
       </div>
+      {/* Dark overlay to improve text contrast */}
+      <div className="absolute inset-0 bg-black/30 pointer-events-none"></div>
       
       {/* Content */}
       <div className="relative z-10 flex items-center justify-center min-h-[300px]">
