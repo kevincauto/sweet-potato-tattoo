@@ -57,7 +57,7 @@ export default function NewsletterSection({ priority = false }: NewsletterSectio
       {/* Background image using Next.js Image */}
       <div className="absolute inset-0">
         <Image
-          src="/fox-up.jpeg"
+          src="/spain-mountain.jpeg"
           alt="Sparrow background"
           fill
           sizes="100vw"
