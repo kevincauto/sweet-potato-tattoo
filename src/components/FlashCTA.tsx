@@ -62,14 +62,10 @@ export default function FlashCTA({ imageUrls, variant = 'to-flash' }: FlashCTAPr
       </div>
 
       <style jsx>{`
-        @keyframes marqueeScroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
         .marquee { position: absolute; inset: 0; }
         .marquee-track {
           width: 200%;
-          animation: marqueeScroll 60s linear infinite;
+          /* Animation removed - now static */
         }
       `}</style>
     </section>
