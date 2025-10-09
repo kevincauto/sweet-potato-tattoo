@@ -169,6 +169,34 @@ export default function DraggableImageGrid({
               {image.caption || 'Add caption'}
             </p>
           )}
+          {/* Hosted URL buttons */}
+          <div className="w-full mt-1 flex gap-1">
+            <a
+              href={image.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 bg-[#7B894C] text-white text-[10px] px-2 py-1 rounded text-center hover:bg-[#6A7A3F] transition-colors"
+              title="Visit hosted image in new tab"
+            >
+              Visit Hosted Image
+            </a>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(image.url);
+                // Optional: Show a brief confirmation
+                const button = event?.target as HTMLButtonElement;
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                  button.textContent = originalText;
+                }, 1000);
+              }}
+              className="flex-1 bg-gray-500 text-white text-[10px] px-2 py-1 rounded hover:bg-gray-600 transition-colors"
+              title="Copy image URL to clipboard"
+            >
+              Copy Image URL
+            </button>
+          </div>
           {/* Category control for flash collection */}
           {showCategoryControl && collection === 'flash' && (
             <div className="w-full mt-1">
