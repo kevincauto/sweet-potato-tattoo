@@ -162,7 +162,7 @@ export default function AboutAdminPage() {
               placeholder="Enter HTML content..."
             />
             <p className="text-xs text-gray-500 mt-1">
-              Use HTML tags like &lt;div&gt;, &lt;p&gt;, &lt;h2&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;a&gt;, etc. You can use classes like "text-[#7B894C]" for links.
+              Use HTML tags like &lt;div&gt;, &lt;p&gt;, &lt;h2&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;a&gt;, etc. You can use classes like &quot;text-[#7B894C]&quot; for links.
             </p>
           </div>
 
