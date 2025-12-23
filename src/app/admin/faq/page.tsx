@@ -152,6 +152,12 @@ export default function FAQAdminPage() {
         >
           Booking
         </Link>
+        <Link 
+          href="/admin/about" 
+          className="px-4 py-2 rounded-lg border border-[#7B894C] text-[#7B894C] bg-white hover:bg-[#7B894C] hover:text-white transition-colors"
+        >
+          About
+        </Link>
       </div>
 
       {/* Add New FAQ Item */}

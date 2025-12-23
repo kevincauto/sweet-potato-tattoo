@@ -65,6 +65,18 @@ export default function Navbar() {
             </li>
             <li>
               <Link 
+                href="/about" 
+                className={`transition-colors px-2 py-1 rounded ${
+                  pathname === "/about" 
+                    ? "text-[#414141]" 
+                    : "text-[#7B894C] hover:text-[#414141]"
+                }`}
+              >
+                About
+              </Link>
+            </li>
+            <li>
+              <Link 
                 href="/faq" 
                 className={`transition-colors px-2 py-1 rounded ${
                   pathname === "/faq" 
