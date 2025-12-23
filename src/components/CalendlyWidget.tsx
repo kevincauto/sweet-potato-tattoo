@@ -21,8 +21,8 @@ export default function CalendlyWidget() {
       existingScript.addEventListener('load', () => {
         setScriptLoaded(true);
       });
-      // If already loaded, set immediately
-      if ((existingScript as HTMLScriptElement).complete) {
+      // Check if Calendly is already available (script may have loaded)
+      if (window.Calendly) {
         setScriptLoaded(true);
       }
       return;

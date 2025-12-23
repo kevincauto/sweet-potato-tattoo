@@ -10,7 +10,7 @@ export default async function BookingAvailabilityPage() {
   // Fetch booking page data
   let introText = 'Please read each section fully before booking.';
   try {
-    const bookingData = await kv.get<{ introText: string; sections: any[] }>('booking-page');
+    const bookingData = await kv.get<{ introText: string; sections: Array<{ id: string; title: string; content: string; order: number }> }>('booking-page');
     if (bookingData?.introText) {
       introText = bookingData.introText;
     }

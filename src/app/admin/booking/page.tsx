@@ -174,30 +174,6 @@ export default function BookingAdminPage() {
     }
   };
 
-  const handleReorder = async (newOrder: BookingSection[]) => {
-    if (!bookingData) return;
-
-    try {
-      const response = await fetch('/api/booking', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sections: newOrder
-        }),
-      });
-
-      if (response.ok) {
-        fetchBookingData();
-      } else {
-        alert('Failed to reorder sections');
-      }
-    } catch (error) {
-      console.error('Error reordering sections:', error);
-      alert('Error reordering sections');
-    }
-  };
 
   if (loading) {
     return (
