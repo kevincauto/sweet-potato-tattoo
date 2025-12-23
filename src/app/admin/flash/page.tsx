@@ -119,6 +119,12 @@ export default function FlashAdminPage() {
         >
           FAQ
         </Link>
+        <Link 
+          href="/admin/booking" 
+          className="px-4 py-2 rounded-lg border border-[#7B894C] text-[#7B894C] bg-white hover:bg-[#7B894C] hover:text-white transition-colors"
+        >
+          Booking
+        </Link>
       </div>
       
       <form
