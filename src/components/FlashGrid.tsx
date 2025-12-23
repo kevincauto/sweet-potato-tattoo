@@ -20,7 +20,24 @@ interface FlashGridProps {
 export default function FlashGrid({ images, captionsMap, categoriesMap = {} }: FlashGridProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const categoryOptions = ['All', 'Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash', 'Discount Flash'];
+  
+  // Internal category names (as stored in database)
+  const internalCategories = ['All', 'Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash', 'Discount Flash'];
+  
+  // Display names for user-facing buttons
+  const getDisplayName = (category: string): string => {
+    const displayMap: Record<string, string> = {
+      'All': 'All',
+      'Fauna Flash': 'Animal Flash',
+      'Flora Flash': 'Plant Flash',
+      'Sky Flash': 'Sky Flash',
+      'Small Flash': 'Small Flash',
+      'Discount Flash': 'Discount Flash'
+    };
+    return displayMap[category] || category;
+  };
+  
+  const categoryOptions = internalCategories;
 
   const viewItems = useMemo(() => {
     const withIndex = images.map((blob, index) => ({ blob, index }));
@@ -41,9 +58,9 @@ export default function FlashGrid({ images, captionsMap, categoriesMap = {} }: F
   return (
     <>
       {/* Filter control */}
-      <div className="flex flex-col items-center mb-4">
-        <div className="text-sm text-gray-700 mb-2">Filter By:</div>
-        <div className="flex flex-wrap justify-center gap-2">
+      <div className="flex flex-col items-center mb-8">
+        <div className="text-xl font-semibold text-[#7B894C] mb-4">Filter by Flash Category:</div>
+        <div className="flex flex-wrap justify-center gap-3">
           {categoryOptions.map((opt) => {
             const isActive = selectedCategory === opt;
             return (
@@ -52,13 +69,13 @@ export default function FlashGrid({ images, captionsMap, categoriesMap = {} }: F
                 type="button"
                 aria-pressed={isActive}
                 onClick={() => setSelectedCategory(opt)}
-                className={`px-3 py-1 rounded-full border text-sm transition-colors ${
+                className={`px-5 py-2 rounded-full border text-base font-medium transition-colors ${
                   isActive
                     ? 'bg-[#7B894C] text-white border-[#7B894C]'
                     : 'bg-white text-[#414141] border-gray-300 hover:bg-gray-50'
                 }`}
               >
-                {opt}
+                {getDisplayName(opt)}
               </button>
             );
           })}
