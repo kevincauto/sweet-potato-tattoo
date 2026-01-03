@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -10,14 +10,16 @@ type FlashCTAProps = {
 };
 
 export default function FlashCTA({ imageUrls, variant = 'to-flash' }: FlashCTAProps) {
-  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
-  const images = useMemo(() => imageUrls.slice(0, 20).filter(url => url && url.trim().length > 0), [imageUrls]);
+  const images = useMemo(() => {
+    const filtered = imageUrls.slice(0, 20).filter(url => url && url.trim().length > 0);
+    console.log('FlashCTA images:', filtered.length, 'from', imageUrls.length, 'total URLs');
+    return filtered;
+  }, [imageUrls]);
 
-  if (images.length === 0) return null;
-
-  const handleImageError = (url: string) => {
-    setFailedImages(prev => new Set(prev).add(url));
-  };
+  if (images.length === 0) {
+    console.log('FlashCTA: No images to display');
+    return null;
+  }
 
   return (
     <section className="relative my-8 w-screen overflow-hidden left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
@@ -26,31 +28,24 @@ export default function FlashCTA({ imageUrls, variant = 'to-flash' }: FlashCTAPr
         <div className="relative h-[260px] sm:h-[300px] overflow-hidden">
           {/* Scrolling strip */}
           <div className="absolute inset-0 bg-gray-200">
-            <div className="marquee h-full">
+            <div className="marquee h-full z-0">
               <div className="marquee-track h-full flex items-center gap-2">
-                {[...images, ...images].map((url, i) => {
-                  if (failedImages.has(url)) {
-                    return null; // Don't render failed images
-                  }
-                  return (
-                    <div key={`${url}-${i}`} className="relative h-full w-[45vw] sm:w-[35vw] md:w-[28vw] lg:w-[22vw] flex-shrink-0">
-                      <Image
-                        src={url}
-                        alt="Flash background"
-                        fill
-                        sizes="(max-width: 640px) 45vw, (max-width: 768px) 35vw, (max-width: 1024px) 28vw, 22vw"
-                        className="object-cover"
-                        loading="eager"
-                        priority={i < 4}
-                        unoptimized
-                        onError={() => handleImageError(url)}
-                      />
-                    </div>
-                  );
-                })}
+                {[...images, ...images].map((url, i) => (
+                  <div key={`${url}-${i}`} className="relative h-full w-[45vw] sm:w-[35vw] md:w-[28vw] lg:w-[22vw] flex-shrink-0">
+                    <Image
+                      src={url}
+                      alt="Flash background"
+                      fill
+                      sizes="(max-width: 640px) 45vw, (max-width: 768px) 35vw, (max-width: 1024px) 28vw, 22vw"
+                      className="object-cover"
+                      loading="eager"
+                      priority={i < 4}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="absolute inset-0 bg-black/25" />
+            <div className="absolute inset-0 bg-black/25 z-[1]" />
           </div>
 
           {/* Content */}
