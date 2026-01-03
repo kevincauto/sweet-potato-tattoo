@@ -20,7 +20,6 @@ interface FlashGridProps {
 export default function FlashGrid({ images, captionsMap, categoriesMap = {} }: FlashGridProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   
   // Internal category names (as stored in database)
   const internalCategories = ['All', 'Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash', 'Discount Flash'];
@@ -84,42 +83,28 @@ export default function FlashGrid({ images, captionsMap, categoriesMap = {} }: F
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-        {viewItems.map(({ blob, index }) => {
-          const hasFailed = failedImages.has(blob.url);
-          return (
-            <div 
-              key={index} 
-              className="relative group aspect-[5/6] overflow-hidden rounded-lg cursor-pointer bg-gray-200"
-              onClick={() => openModal(index)}
-            >
-              {!hasFailed ? (
-                <Image
-                  src={blob.url}
-                  alt={`Flash image ${index + 1}`}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-50"
-                  onError={() => {
-                    console.error('Flash image failed to load:', blob.url);
-                    setFailedImages(prev => new Set(prev).add(blob.url));
-                  }}
-                  unoptimized
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-300">
-                  <span className="text-gray-500 text-sm">Image unavailable</span>
-                </div>
-              )}
-              {captionsMap[blob.url] && !hasFailed && (
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">
-                  <p className="text-white text-sm text-center leading-relaxed drop-shadow-lg whitespace-pre-line">
-                    {captionsMap[blob.url]}
-                  </p>
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {viewItems.map(({ blob, index }) => (
+          <div 
+            key={index} 
+            className="relative group aspect-[5/6] overflow-hidden rounded-lg cursor-pointer"
+            onClick={() => openModal(index)}
+          >
+            <Image
+              src={blob.url}
+              alt={`Flash image ${index + 1}`}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-50"
+            />
+            {captionsMap[blob.url] && (
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">
+                <p className="text-white text-sm text-center leading-relaxed drop-shadow-lg whitespace-pre-line">
+                  {captionsMap[blob.url]}
+                </p>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* Modal */}
