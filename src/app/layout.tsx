@@ -4,6 +4,8 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import ConditionalFooter from '@/components/ConditionalFooter';
 import ConditionalNewsletter from '@/components/ConditionalNewsletter';
+import { Analytics } from '@vercel/analytics/react';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 
 export const metadata: Metadata = {
   title: 'Sweet Potato Tattoo',
@@ -35,6 +37,8 @@ export default function RootLayout({
         {/* Hide newsletter/footer on booking page for focus */}
         <ConditionalNewsletter />
         <ConditionalFooter />
+        <Analytics />
+        <GoogleAnalytics />
       </body>
     </html>
   );
