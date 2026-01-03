@@ -93,6 +93,7 @@ export default function FlashGrid({ images, captionsMap, categoriesMap = {} }: F
               src={blob.url}
               alt={`Flash image ${index + 1}`}
               fill
+              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-50"
             />
             {captionsMap[blob.url] && (
