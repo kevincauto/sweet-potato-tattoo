@@ -40,6 +40,10 @@ export default async function AvailableFlashPage() {
     .map(url => blobMap.get(url))
     .filter(blob => blob !== undefined);
   
+  // Filter flash URLs to only include existing blobs (same filtering as FlashGrid)
+  const existingFlashUrls = imageUrls
+    .filter(url => blobMap.has(url));
+  
   // Get captions for existing blobs
   const captionsRaw = (await kv.hgetall('captions')) as Record<string, string> | null;
   const captionsMap = captionsRaw ?? {};
@@ -58,7 +62,7 @@ export default async function AvailableFlashPage() {
       />
       {/* Full-bleed CTA below the grid */}
       <div className="mt-8">
-        <FlashCTA imageUrls={imageUrls} variant="to-booking" />
+        <FlashCTA imageUrls={existingFlashUrls} variant="to-booking" />
       </div>
     </main>
   );

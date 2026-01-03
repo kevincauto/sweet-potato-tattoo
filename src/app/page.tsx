@@ -19,6 +19,10 @@ export default async function Home() {
     .map(url => blobMap.get(url))
     .filter(blob => blob !== undefined);
   
+  // Filter flash URLs to only include existing blobs
+  const existingFlashUrls = flashUrls
+    .filter(url => blobMap.has(url));
+  
   const captionsRaw = (await kv.hgetall('captions')) as Record<string, string> | null;
   const captionsMap = captionsRaw ?? {};
 
@@ -40,7 +44,7 @@ export default async function Home() {
         </div>
       </main>
       {/* Flash CTA - full-bleed under gallery, above footer */}
-      <FlashCTA imageUrls={flashUrls} />
+      <FlashCTA imageUrls={existingFlashUrls} />
     </>
   );
 }
