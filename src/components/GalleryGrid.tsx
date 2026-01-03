@@ -42,7 +42,6 @@ export default function GalleryGrid({ images, captionsMap }: GalleryGridProps) {
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-50"
-              unoptimized
             />
             {captionsMap[blob.url] && (
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">

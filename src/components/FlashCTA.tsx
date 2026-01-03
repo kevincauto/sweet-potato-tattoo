@@ -10,16 +10,9 @@ type FlashCTAProps = {
 };
 
 export default function FlashCTA({ imageUrls, variant = 'to-flash' }: FlashCTAProps) {
-  const images = useMemo(() => {
-    const filtered = imageUrls.slice(0, 20).filter(url => url && url.trim().length > 0);
-    console.log('FlashCTA images:', filtered.length, 'from', imageUrls.length, 'total URLs');
-    return filtered;
-  }, [imageUrls]);
+  const images = useMemo(() => imageUrls.slice(0, 20).filter(url => url && url.trim().length > 0), [imageUrls]);
 
-  if (images.length === 0) {
-    console.log('FlashCTA: No images to display');
-    return null;
-  }
+  if (images.length === 0) return null;
 
   return (
     <section className="relative my-8 w-screen overflow-hidden left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
