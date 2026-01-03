@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     // Send email notification
     const result = await resend.emails.send({
       from: 'hello@sweetpotatotattoo.com', // Using your verified domain
-      to: 'joseyseungahlee@gmail.com',
+      to: 'SweetPotatoTattoo@gmail.com',
       cc: ['KevinMCauto@gmail.com'],
       subject: 'New Newsletter Signup - Sweet Potato Tattoo',
       html: `
