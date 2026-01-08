@@ -4,6 +4,11 @@ export const metadata = {
   title: 'About',
 };
 
+// Ensure the page always fetches fresh data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
 export default async function AboutPage() {
   // Fetch about page data
   let title = 'About';

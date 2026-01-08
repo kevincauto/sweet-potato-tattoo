@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 
 interface AboutPageData {
@@ -14,6 +14,9 @@ export default function AboutAdminPage() {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [imageAlt, setImageAlt] = useState('');
 
   const fetchAboutData = useCallback(async () => {
     setLoading(true);
@@ -38,6 +41,72 @@ export default function AboutAdminPage() {
     fetchAboutData();
   }, [fetchAboutData]);
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file.');
+      return;
+    }
+
+    setUploading(true);
+    setUploadedImageUrl(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Upload to gallery collection (we can use any collection, or create a generic one)
+      const response = await fetch(`/api/upload/gallery?filename=${encodeURIComponent(file.name)}`, {
+        method: 'POST',
+        body: file,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUploadedImageUrl(data.url);
+        setImageAlt(file.name.replace(/\.[^/.]+$/, '')); // Use filename as default alt text
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
+        alert(`Failed to upload image: ${errorData.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading image');
+    } finally {
+      setUploading(false);
+      // Reset file input
+      event.target.value = '';
+    }
+  };
+
+  const insertImageAtCursor = () => {
+    if (!uploadedImageUrl) return;
+
+    const textarea = document.getElementById('about-content') as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const textBefore = content.substring(0, start);
+    const textAfter = content.substring(end);
+    
+    // Create image HTML with optional alt text and styling
+    const imageHtml = `<img src="${uploadedImageUrl}" alt="${imageAlt || 'Image'}" class="w-full max-w-md mx-auto my-6 rounded-lg" />`;
+    
+    const newContent = textBefore + imageHtml + textAfter;
+    setContent(newContent);
+    
+    // Set cursor position after inserted image
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + imageHtml.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
   const handleSave = async () => {
     if (!title.trim() || !content.trim()) {
       alert('Please enter both a title and content.');
@@ -60,9 +129,13 @@ export default function AboutAdminPage() {
       if (response.ok) {
         const data = await response.json();
         setAboutData(data.data);
+        // Refresh the data to show updated content
+        await fetchAboutData();
         alert('About page saved successfully!');
       } else {
-        alert('Failed to save about page');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Save failed:', errorData);
+        alert(`Failed to save about page: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error saving about page:', error);
@@ -149,6 +222,66 @@ export default function AboutAdminPage() {
             />
           </div>
 
+          {/* Image Upload Section */}
+          <div className="border rounded-lg p-4 bg-gray-50">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Upload Image
+            </label>
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={uploading}
+                  className="flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#7B894C] file:text-white hover:file:bg-[#6A7A3F] disabled:opacity-50"
+                />
+                {uploading && (
+                  <span className="text-sm text-gray-500 self-center">Uploading...</span>
+                )}
+              </div>
+              
+              {uploadedImageUrl && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Image uploaded!</span>
+                    <button
+                      onClick={() => {
+                        setUploadedImageUrl(null);
+                        setImageAlt('');
+                      }}
+                      className="text-xs text-red-600 hover:text-red-800"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      value={imageAlt}
+                      onChange={(e) => setImageAlt(e.target.value)}
+                      placeholder="Image alt text (optional)"
+                      className="flex-1 px-3 py-2 border rounded-lg text-sm"
+                    />
+                    <button
+                      onClick={insertImageAtCursor}
+                      className="bg-[#7B894C] text-white px-4 py-2 rounded-lg hover:bg-[#6A7A3F] transition-colors text-sm"
+                    >
+                      Insert at Cursor
+                    </button>
+                  </div>
+                  <div className="mt-2">
+                    <img
+                      src={uploadedImageUrl}
+                      alt="Preview"
+                      className="max-w-xs rounded-lg border"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div>
             <label htmlFor="about-content" className="block text-sm font-medium text-gray-700 mb-2">
               Content (HTML)
@@ -162,7 +295,7 @@ export default function AboutAdminPage() {
               placeholder="Enter HTML content..."
             />
             <p className="text-xs text-gray-500 mt-1">
-              Use HTML tags like &lt;div&gt;, &lt;p&gt;, &lt;h2&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;a&gt;, etc. You can use classes like &quot;text-[#7B894C]&quot; for links.
+              Use HTML tags like &lt;div&gt;, &lt;p&gt;, &lt;h2&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;a&gt;, etc. You can use classes like &quot;text-[#7B894C]&quot; for links. Upload an image above and click &quot;Insert at Cursor&quot; to add it to your content.
             </p>
           </div>
 
