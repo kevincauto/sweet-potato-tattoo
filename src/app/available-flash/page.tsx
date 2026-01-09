@@ -64,7 +64,7 @@ export default async function AvailableFlashPage() {
           </div>
           <div className="ml-3">
             <p className="text-sm text-yellow-700">
-              <strong>Under Construction:</strong> This section may not be up-to-date. Please check back later!
+              <strong>Under Construction:</strong> This section may not be up to date. Please check back later!
             </p>
           </div>
         </div>
