@@ -63,9 +63,13 @@ export default async function AvailableFlashPage() {
             </svg>
           </div>
           <div className="ml-3">
-            <p className="text-sm text-yellow-700">
-              <strong>Under Construction:</strong> This section may not be up to date. Please check back later!
-            </p>
+              <p className="text-sm text-yellow-700">
+                <strong>Under Construction:</strong> This section may not be up to date. Please view my Instagram flash stories <a 
+                href="https://www.instagram.com/sweetpotatotat/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="underline font-semibold">HERE</a> for now.
+              </p>
           </div>
         </div>
       </div>
