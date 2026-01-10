@@ -107,15 +107,17 @@ export async function GET(_: Request, { params }: any) {
     }
   }
 
-  // Return items with captions and categories
+  // Return items with captions, categories, and schedules
   const items = await Promise.all(
     uniqueUrls.map(async (url) => {
       const caption = (await kv.hget('captions', url)) as string | null;
       let category: string | null = null;
+      let schedule: string | null = null;
       if (collection === 'flash') {
         category = (await kv.hget('flash-categories', url)) as string | null;
+        schedule = (await kv.hget('flash-schedules', url)) as string | null;
       }
-      return { url, caption: caption || '', category: category || '' };
+      return { url, caption: caption || '', category: category || '', schedule: schedule || '' };
     })
   );
 
@@ -128,15 +130,26 @@ export async function PUT(request: Request) {
   const url = searchParams.get('url');
   const caption = searchParams.get('caption') || '';
   const category = searchParams.get('category');
+  const schedule = searchParams.get('schedule'); // ISO string or empty string to clear
   const collection = searchParams.get('collection');
   if (!url) return NextResponse.json({ error: 'url required' }, { status: 400 });
-  if (caption) {
+  if (caption !== null) {
     await kv.hset('captions', { [url]: caption });
   }
-  if (collection === 'flash' && category) {
-    const allowedCategories = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash', 'Discount Flash'];
-    if (allowedCategories.includes(category)) {
-      await kv.hset('flash-categories', { [url]: category });
+  if (collection === 'flash') {
+    if (category) {
+      const allowedCategories = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash', 'Discount Flash'];
+      if (allowedCategories.includes(category)) {
+        await kv.hset('flash-categories', { [url]: category });
+      }
+    }
+    // Handle schedule: if empty string, delete; otherwise save
+    if (schedule !== null) {
+      if (schedule === '') {
+        await kv.hdel('flash-schedules', url);
+      } else {
+        await kv.hset('flash-schedules', { [url]: schedule });
+      }
     }
   }
   return NextResponse.json({ ok: true });
@@ -220,6 +233,7 @@ export async function DELETE(request: Request, { params }: any) {
   await kv.hdel('captions', url);
   if (collection === 'flash') {
     await kv.hdel('flash-categories', url);
+    await kv.hdel('flash-schedules', url);
   }
   return NextResponse.json({ message: 'File deleted.' });
 } 

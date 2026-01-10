@@ -3,10 +3,107 @@
 import { useState, useRef } from 'react';
 import Image from 'next/image';
 
+// Helper function to convert ET ISO string to datetime-local format
+// The datetime-local input will show the ET time directly (user needs to think in ET)
+function convertETToLocalDateTime(etISO: string): string {
+  const etDate = new Date(etISO);
+  if (isNaN(etDate.getTime())) return '';
+  
+  // Extract date components from the ET date
+  const year = etDate.getFullYear();
+  const month = String(etDate.getMonth() + 1).padStart(2, '0');
+  const day = String(etDate.getDate()).padStart(2, '0');
+  const hours = String(etDate.getHours()).padStart(2, '0');
+  const minutes = String(etDate.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+// Helper function to convert datetime-local input to ET ISO string
+// We interpret the input as ET time (user should enter ET time)
+function convertLocalDateTimeToET(localDateTime: string): string {
+  try {
+    const [datePart, timePart] = localDateTime.split('T');
+    if (!datePart || !timePart) {
+      throw new Error('Invalid datetime format');
+    }
+    
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hours, minutes] = timePart.split(':').map(Number);
+    
+    if (isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hours) || isNaN(minutes)) {
+      throw new Error('Invalid date/time components');
+    }
+    
+    // Create a date string in the format: YYYY-MM-DDTHH:mm:00
+    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+    
+    // Create a date object from the input (treats as local timezone)
+    const localDate = new Date(dateStr);
+    
+    if (isNaN(localDate.getTime())) {
+      throw new Error('Invalid date');
+    }
+    
+    // Get what this time represents in ET timezone
+    const etTimeStr = localDate.toLocaleString('en-US', { 
+      timeZone: 'America/New_York',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+    
+    // Parse the ET time string
+    // Format: "MM/DD/YYYY, HH:mm:ss" or "M/D/YYYY, H:mm:ss"
+    const parts = etTimeStr.split(', ');
+    if (parts.length !== 2) {
+      // Fallback: use the input directly as ET time
+      return new Date(dateStr).toISOString();
+    }
+    
+    const [datePartET, timePartET] = parts;
+    if (!datePartET || !timePartET) {
+      return new Date(dateStr).toISOString();
+    }
+    
+    const [monthDayYear, time] = datePartET.split(' ');
+    if (!monthDayYear || !time) {
+      return new Date(dateStr).toISOString();
+    }
+    
+    const [m, d, y] = monthDayYear.split('/');
+    const [h, min, sec] = time.split(':');
+    
+    if (!m || !d || !y || !h || !min || !sec) {
+      return new Date(dateStr).toISOString();
+    }
+    
+    // Create ISO string for ET time
+    // We'll store this as UTC, but it represents ET time
+    // On server, we'll compare by converting current time to ET
+    const etISO = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T${h.padStart(2, '0')}:${min.padStart(2, '0')}:${sec.padStart(2, '0')}Z`;
+    return etISO;
+  } catch (error) {
+    console.error('Error converting datetime to ET:', error);
+    // Fallback: return ISO string from input
+    const [datePart, timePart] = localDateTime.split('T');
+    if (datePart && timePart) {
+      const [year, month, day] = datePart.split('-').map(Number);
+      const [hours, minutes] = timePart.split(':').map(Number);
+      return new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`).toISOString();
+    }
+    return new Date().toISOString();
+  }
+}
+
 interface ImgItem {
   url: string;
   caption?: string;
   category?: string;
+  schedule?: string;
 }
 
 interface DraggableImageGridProps {
@@ -15,6 +112,7 @@ interface DraggableImageGridProps {
   onDelete: (url: string) => void;
   onEditCaption: (url: string, caption: string) => void;
   onEditCategory?: (url: string, category: string) => void;
+  onEditSchedule?: (url: string, schedule: string) => void;
   editingUrl: string | null;
   setEditingUrl: (url: string | null) => void;
   tempCaption: string;
@@ -30,6 +128,7 @@ export default function DraggableImageGrid({
   onDelete,
   onEditCaption,
   onEditCategory,
+  onEditSchedule,
   editingUrl,
   setEditingUrl,
   tempCaption,
@@ -203,6 +302,52 @@ export default function DraggableImageGrid({
                   </option>
                 ))}
               </select>
+            </div>
+          )}
+          {/* Schedule control for flash collection */}
+          {collection === 'flash' && onEditSchedule && (
+            <div className="w-full mt-1">
+              <label className="text-[10px] text-gray-600 block mb-1">
+                Hide image until (Eastern Time):
+              </label>
+              <input
+                type="datetime-local"
+                className="w-full text-[11px] border rounded p-1"
+                value={image.schedule ? convertETToLocalDateTime(image.schedule) : ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value) {
+                    // Convert datetime-local input to ET ISO string
+                    // Note: datetime-local is in user's local time, but we interpret as ET
+                    const etISO = convertLocalDateTimeToET(value);
+                    onEditSchedule(image.url, etISO);
+                  } else {
+                    // Clear schedule
+                    onEditSchedule(image.url, '');
+                  }
+                }}
+                onBlur={(e) => {
+                  // Also save on blur (when user clicks away)
+                  const value = e.target.value;
+                  if (value) {
+                    const etISO = convertLocalDateTimeToET(value);
+                    onEditSchedule(image.url, etISO);
+                  }
+                }}
+                title="Enter time in Eastern Time (ET/EDT). The picker shows your local time, but enter the ET time you want. Changes save automatically when you select a date/time."
+              />
+              {image.schedule && (
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-[9px] text-green-600">✓ Scheduled</span>
+                  <button
+                    type="button"
+                    onClick={() => onEditSchedule(image.url, '')}
+                    className="text-[9px] text-red-600 hover:text-red-800"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
             </div>
           )}
           <button

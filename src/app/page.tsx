@@ -38,6 +38,36 @@ export default async function Home() {
   const categoriesRaw = (await kv.hgetall('flash-categories')) as Record<string, string> | null;
   const categoriesMap = categoriesRaw ?? {};
 
+  // Get schedules for flash images (url -> schedule ISO string)
+  const schedulesRaw = (await kv.hgetall('flash-schedules')) as Record<string, string> | null;
+  const schedulesMap = schedulesRaw ?? {};
+
+  // Filter images based on schedule (only show if current ET time >= schedule time)
+  // Get current time in ET
+  const now = new Date();
+  const nowETStr = now.toLocaleString('en-US', { 
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  // Parse ET time string to create comparable date
+  const [datePart, timePart] = nowETStr.split(', ');
+  const [month, day, year] = datePart.split('/');
+  const [hours, minutes, seconds] = timePart.split(':');
+  const nowET = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:${seconds.padStart(2, '0')}`);
+  
+  const visibleBlobs = existingBlobs.filter(blob => {
+    const schedule = schedulesMap[blob.url];
+    if (!schedule) return true; // No schedule = visible immediately
+    const scheduleDate = new Date(schedule);
+    return nowET >= scheduleDate; // Show if current ET time >= schedule time
+  });
+
   return (
     <>
       {/* Newsletter section - right after navigation */}
@@ -67,7 +97,7 @@ export default async function Home() {
         
         <h1 className="text-4xl font-light text-center my-8 text-[#414141]">Available Flash Designs</h1>
         <FlashGrid 
-          images={existingBlobs}
+          images={visibleBlobs}
           captionsMap={captionsMap}
           categoriesMap={categoriesMap}
         />

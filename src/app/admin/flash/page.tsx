@@ -8,7 +8,7 @@ import DraggableImageGrid from '../../../components/DraggableImageGrid';
 export default function FlashAdminPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
-  interface ImgItem { url: string; caption?: string; category?: string }
+  interface ImgItem { url: string; caption?: string; category?: string; schedule?: string }
   const CATEGORY_OPTIONS = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash', 'Discount Flash'] as const;
   const [images, setImages] = useState<ImgItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,6 +91,18 @@ export default function FlashAdminPage() {
     setImages((imgs) =>
       imgs.map((it) =>
         it.url === url ? { ...it, category } : it
+      )
+    );
+  }
+
+  async function handleEditSchedule(url: string, schedule: string) {
+    await fetch(
+      `/api/upload/flash?url=${encodeURIComponent(url)}&collection=flash&schedule=${encodeURIComponent(schedule)}`,
+      { method: 'PUT' }
+    );
+    setImages((imgs) =>
+      imgs.map((it) =>
+        it.url === url ? { ...it, schedule: schedule || undefined } : it
       )
     );
   }
@@ -235,6 +247,7 @@ export default function FlashAdminPage() {
         onDelete={handleDelete}
         onEditCaption={handleEditCaption}
         onEditCategory={handleEditCategory}
+        onEditSchedule={handleEditSchedule}
         editingUrl={editingUrl}
         setEditingUrl={setEditingUrl}
         tempCaption={tempCaption}
