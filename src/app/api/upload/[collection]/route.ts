@@ -2,8 +2,8 @@
 // API route for uploading images by collection
 
 import { NextResponse } from 'next/server';
-import { put, del, list } from '@vercel/blob';
 import { kv } from '@vercel/kv';
+import cloudinary from '@/lib/cloudinary';
 
 // ───────────────────────── POST /api/upload/:collection
 export async function POST(request: Request, { params }: any) {
@@ -28,27 +28,52 @@ export async function POST(request: Request, { params }: any) {
   const baseName = filename.includes('.') ? filename.replace(/\.[^/.]+$/, '') : filename;
   const uniqueFilename = `${baseName}-${timestamp}-${randomId}${fileExtension ? '.' + fileExtension : ''}`;
 
-  const blob = await put(uniqueFilename, request.body, {
-    access: 'public',
-  });
+  // Convert request body to buffer
+  const arrayBuffer = await request.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  // Upload to Cloudinary
+  const uploadResult = await new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: `sweet-potato-tattoo/${collection}`,
+        public_id: uniqueFilename.replace(/\.[^/.]+$/, ''), // Remove extension for Cloudinary
+        resource_type: 'image',
+        overwrite: false,
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+    uploadStream.end(buffer);
+  }) as any;
+
+  const imageUrl = uploadResult.secure_url;
 
   // Check if this URL already exists in the list (shouldn't happen with unique names, but just in case)
   const existingUrls = await kv.lrange(`${collection}-images`, 0, -1);
-  if (!existingUrls.includes(blob.url)) {
-    await kv.lpush(`${collection}-images`, blob.url);
+  if (!existingUrls.includes(imageUrl)) {
+    await kv.lpush(`${collection}-images`, imageUrl);
   }
 
   if (caption) {
-    await kv.hset('captions', { [blob.url]: caption });
+    await kv.hset('captions', { [imageUrl]: caption });
   }
   // Save category for flash collection
   if (collection === 'flash' && category) {
     const allowedCategories = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash', 'Discount Flash'];
     if (allowedCategories.includes(category)) {
-      await kv.hset('flash-categories', { [blob.url]: category });
+      await kv.hset('flash-categories', { [imageUrl]: category });
     }
   }
-  return NextResponse.json(blob);
+  
+  return NextResponse.json({ 
+    url: imageUrl,
+    pathname: uploadResult.public_id,
+    size: uploadResult.bytes,
+    uploadedAt: new Date(uploadResult.created_at),
+  });
 }
 
 // ───────────────────────── GET /api/upload/:collection
@@ -69,7 +94,7 @@ export async function GET(_: Request, { params }: any) {
     }
   }
   
-  if (urls.length === 0) return NextResponse.json({ blobs: [] });
+  if (urls.length === 0) return NextResponse.json({ items: [] });
 
   // Remove duplicates while preserving order (keep first occurrence)
   const uniqueUrls = urls.filter((url, index) => urls.indexOf(url) === index);
@@ -82,24 +107,15 @@ export async function GET(_: Request, { params }: any) {
     }
   }
 
-  const { blobs } = await list();
-  
-  // Create a map of URL to blob for quick lookup
-  const blobMap = new Map(blobs.map(b => [b.url, b]));
-  
-  // Filter and order blobs according to the KV list order
-  const orderedBlobs = uniqueUrls
-    .map(url => blobMap.get(url))
-    .filter(blob => blob !== undefined);
-
+  // Return items with captions and categories
   const items = await Promise.all(
-    orderedBlobs.map(async (b) => {
-      const caption = (await kv.hget('captions', b.url)) as string | null;
+    uniqueUrls.map(async (url) => {
+      const caption = (await kv.hget('captions', url)) as string | null;
       let category: string | null = null;
       if (collection === 'flash') {
-        category = (await kv.hget('flash-categories', b.url)) as string | null;
+        category = (await kv.hget('flash-categories', url)) as string | null;
       }
-      return { url: b.url, caption: caption || '', category: category || '' };
+      return { url, caption: caption || '', category: category || '' };
     })
   );
 
@@ -181,7 +197,29 @@ export async function DELETE(request: Request, { params }: any) {
   const url = searchParams.get('url');
   if (!url) return NextResponse.json({ message: 'No url to delete.' }, { status: 400 });
 
-  await del(url);
+  // Extract public_id from Cloudinary URL
+  // Cloudinary URLs format: https://res.cloudinary.com/{cloud_name}/image/upload/{version}/{public_id}.{format}
+  try {
+    const urlParts = url.split('/');
+    const uploadIndex = urlParts.findIndex(part => part === 'upload');
+    if (uploadIndex !== -1 && uploadIndex < urlParts.length - 1) {
+      // Get the public_id (everything after 'upload' minus the version if present)
+      const afterUpload = urlParts.slice(uploadIndex + 1);
+      // Remove version (v1234567890) if present and get the rest
+      const publicIdParts = afterUpload.filter(part => !part.match(/^v\d+$/));
+      const publicId = publicIdParts.join('/').replace(/\.[^/.]+$/, ''); // Remove file extension
+      
+      await cloudinary.uploader.destroy(publicId);
+    }
+  } catch (error) {
+    console.error('Error deleting from Cloudinary:', error);
+    // Continue to remove from KV even if Cloudinary delete fails
+  }
+
   await kv.lrem(`${collection}-images`, 0, url);
+  await kv.hdel('captions', url);
+  if (collection === 'flash') {
+    await kv.hdel('flash-categories', url);
+  }
   return NextResponse.json({ message: 'File deleted.' });
 } 

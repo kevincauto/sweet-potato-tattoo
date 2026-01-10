@@ -1,5 +1,4 @@
 import { kv } from '@vercel/kv';
-import { list } from '@vercel/blob';
 import NewsletterSection from '@/components/NewsletterSection';
 import GalleryGrid from '@/components/GalleryGrid';
 import FlashCTA from '@/components/FlashCTA';
@@ -18,19 +17,9 @@ export default async function GalleryPage() {
   const imageUrls = await kv.lrange('gallery-images', 0, -1);
   // Get flash images for CTA background
   const flashUrls = await kv.lrange('flash-images', 0, -1);
-  const { blobs } = await list();
   
-  // Create a map of URL to blob for quick lookup
-  const blobMap = new Map(blobs.map(b => [b.url, b]));
-  
-  // Filter and order blobs according to the KV list order
-  const existingBlobs = imageUrls
-    .map(url => blobMap.get(url))
-    .filter(blob => blob !== undefined);
-  
-  // Filter flash URLs to only include existing blobs (for CTA banner)
-  const existingFlashUrls = flashUrls
-    .filter(url => blobMap.has(url));
+  // Convert URLs to BlobData format (components only need url property)
+  const existingBlobs = imageUrls.map(url => ({ url }));
   
   const captionsRaw = (await kv.hgetall('captions')) as Record<string, string> | null;
   const captionsMap = captionsRaw ?? {};
@@ -54,7 +43,7 @@ export default async function GalleryPage() {
       </main>
       
       {/* Flash CTA - full-bleed under gallery, above footer */}
-      <FlashCTA imageUrls={existingFlashUrls} variant="to-flash" />
+      <FlashCTA imageUrls={flashUrls} variant="to-flash" />
     </>
   );
 }
