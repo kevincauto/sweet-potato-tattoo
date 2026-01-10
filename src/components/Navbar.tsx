@@ -36,19 +36,19 @@ export default function Navbar() {
                     : "text-[#7B894C] hover:text-[#414141]"
                 }`}
               >
-                Home
+                Available Flash
               </Link>
             </li>
             <li>
               <Link 
-                href="/available-flash" 
+                href="/gallery" 
                 className={`transition-colors px-2 py-1 rounded ${
-                   pathname === "/available-flash" 
+                  pathname === "/gallery" 
                     ? "text-[#414141]" 
                     : "text-[#7B894C] hover:text-[#414141]"
                 }`}
               >
-                Available Flash
+                Gallery
               </Link>
             </li>
             <li>

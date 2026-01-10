@@ -47,7 +47,7 @@ export default function FlashCTA({ imageUrls, variant = 'to-flash' }: FlashCTAPr
               {variant === 'to-flash' ? (
                 <>
                   <h2 className="text-xl sm:text-2xl font-light text-[#414141] mb-4">Check out the available flash designs!</h2>
-                  <Link href="/available-flash" className="inline-block px-6 py-3 rounded-lg bg-[#7B894C] text-white hover:bg-[#6A7A3F] transition-colors">View Available Flash</Link>
+                  <Link href="/" className="inline-block px-6 py-3 rounded-lg bg-[#7B894C] text-white hover:bg-[#6A7A3F] transition-colors">View Available Flash</Link>
                 </>
               ) : (
                 <>
