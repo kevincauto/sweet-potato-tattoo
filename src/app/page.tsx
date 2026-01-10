@@ -3,6 +3,11 @@ import NewsletterSection from '@/components/NewsletterSection';
 import FlashGrid from '@/components/FlashGrid';
 import FlashCTA from '@/components/FlashCTA';
 
+// Ensure fresh data on every request in production
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
 export default async function Home() {
   // Get flash images in the correct order
   let imageUrls = await kv.lrange('flash-images', 0, -1);
