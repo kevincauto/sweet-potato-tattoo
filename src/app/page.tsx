@@ -104,10 +104,11 @@ export default async function Home() {
 
   // Filter images based on schedule and hidden status
   // Get current time in ET - use a reliable method that works in all environments
+  // Note: 'America/New_York' timezone automatically handles DST transitions (EST/EDT)
   const now = new Date();
   // Get current ET time as ISO string for comparison
   const nowETISO = now.toLocaleString('en-US', { 
-    timeZone: 'America/New_York',
+    timeZone: 'America/New_York', // Automatically handles EST (winter) and EDT (summer)
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -187,8 +188,9 @@ export default async function Home() {
       }
       
       // Convert schedule to ET time string for comparison
+      // Note: 'America/New_York' automatically handles DST, so comparison is correct year-round
       const scheduleETStr = scheduleDate.toLocaleString('en-US', {
-        timeZone: 'America/New_York',
+        timeZone: 'America/New_York', // Automatically handles EST (winter) and EDT (summer)
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
