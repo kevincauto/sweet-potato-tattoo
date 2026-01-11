@@ -103,9 +103,10 @@ export default async function Home() {
   });
 
   // Filter images based on schedule and hidden status
-  // Get current time in ET
+  // Get current time in ET - use a reliable method that works in all environments
   const now = new Date();
-  const nowETStr = now.toLocaleString('en-US', { 
+  // Get current ET time as ISO string for comparison
+  const nowETISO = now.toLocaleString('en-US', { 
     timeZone: 'America/New_York',
     year: 'numeric',
     month: '2-digit',
@@ -115,11 +116,14 @@ export default async function Home() {
     second: '2-digit',
     hour12: false
   });
-  // Parse ET time string to create comparable date
-  const [datePart, timePart] = nowETStr.split(', ');
+  // Parse ET time string to create a proper date object
+  // Format: "MM/DD/YYYY, HH:mm:ss"
+  const [datePart, timePart] = nowETISO.split(', ');
   const [month, day, year] = datePart.split('/');
   const [hours, minutes, seconds] = timePart.split(':');
-  const nowET = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:${seconds.padStart(2, '0')}`);
+  // Create date in ET timezone by using a format that represents ET time
+  // We'll compare ISO strings directly for reliability
+  const nowETString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:${seconds.padStart(2, '0')}`;
   
   const visibleBlobs = existingBlobs.filter(blob => {
     // First check if image is hidden indefinitely
@@ -171,8 +175,41 @@ export default async function Home() {
       .map(url => schedulesMap[url])
       .find(s => s !== undefined);
     if (!schedule) return true; // No schedule = visible immediately
-    const scheduleDate = new Date(schedule);
-    return nowET >= scheduleDate; // Show if current ET time >= schedule time
+    
+    // Compare schedule ISO string with current ET time
+    // Both should be in the same format for reliable comparison
+    try {
+      // Parse the schedule ISO string (may have 'Z' suffix or be in UTC)
+      const scheduleDate = new Date(schedule);
+      if (isNaN(scheduleDate.getTime())) {
+        // Invalid date, show the image
+        return true;
+      }
+      
+      // Convert schedule to ET time string for comparison
+      const scheduleETStr = scheduleDate.toLocaleString('en-US', {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      });
+      
+      // Parse schedule ET time
+      const [schedDatePart, schedTimePart] = scheduleETStr.split(', ');
+      const [schedMonth, schedDay, schedYear] = schedDatePart.split('/');
+      const [schedHours, schedMinutes, schedSeconds] = schedTimePart.split(':');
+      const scheduleETString = `${schedYear}-${schedMonth.padStart(2, '0')}-${schedDay.padStart(2, '0')}T${schedHours.padStart(2, '0')}:${schedMinutes.padStart(2, '0')}:${schedSeconds.padStart(2, '0')}`;
+      
+      // Compare as strings (ISO format allows lexicographic comparison)
+      return nowETString >= scheduleETString;
+    } catch (error) {
+      // If comparison fails, show the image to be safe
+      return true;
+    }
   });
 
   return (
