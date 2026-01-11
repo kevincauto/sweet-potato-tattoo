@@ -116,7 +116,27 @@ export async function GET(_: Request, { params }: any) {
       let hidden: string | null = null;
       if (collection === 'flash') {
         category = (await kv.hget('flash-categories', url)) as string | null;
+        
+        // Check schedule with URL normalization (try multiple encoding variations)
         schedule = (await kv.hget('flash-schedules', url)) as string | null;
+        if (!schedule) {
+          try {
+            const decodedUrl = decodeURIComponent(url);
+            schedule = (await kv.hget('flash-schedules', decodedUrl)) as string | null;
+          } catch {}
+        }
+        if (!schedule) {
+          try {
+            const encodedUrl = encodeURI(url);
+            schedule = (await kv.hget('flash-schedules', encodedUrl)) as string | null;
+          } catch {}
+        }
+        if (!schedule) {
+          try {
+            const doubleEncoded = url.replace(/%20/g, '%2520');
+            schedule = (await kv.hget('flash-schedules', doubleEncoded)) as string | null;
+          } catch {}
+        }
         
         // Check hidden status with URL normalization (try both original and decoded)
         hidden = (await kv.hget('flash-hidden', url)) as string | null;
@@ -130,6 +150,12 @@ export async function GET(_: Request, { params }: any) {
           try {
             const encodedUrl = encodeURI(url);
             hidden = (await kv.hget('flash-hidden', encodedUrl)) as string | null;
+          } catch {}
+        }
+        if (!hidden) {
+          try {
+            const doubleEncoded = url.replace(/%20/g, '%2520');
+            hidden = (await kv.hget('flash-hidden', doubleEncoded)) as string | null;
           } catch {}
         }
       }
