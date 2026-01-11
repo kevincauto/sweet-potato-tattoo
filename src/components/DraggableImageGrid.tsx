@@ -104,6 +104,7 @@ interface ImgItem {
   caption?: string;
   category?: string;
   schedule?: string;
+  hidden?: string | boolean; // 'true' or true if hidden indefinitely
 }
 
 interface DraggableImageGridProps {
@@ -113,6 +114,7 @@ interface DraggableImageGridProps {
   onEditCaption: (url: string, caption: string) => void;
   onEditCategory?: (url: string, category: string) => void;
   onEditSchedule?: (url: string, schedule: string) => void;
+  onToggleHidden?: (url: string, hidden: boolean) => void;
   editingUrl: string | null;
   setEditingUrl: (url: string | null) => void;
   tempCaption: string;
@@ -129,6 +131,7 @@ export default function DraggableImageGrid({
   onEditCaption,
   onEditCategory,
   onEditSchedule,
+  onToggleHidden,
   editingUrl,
   setEditingUrl,
   tempCaption,
@@ -348,6 +351,31 @@ export default function DraggableImageGrid({
                   </button>
                 </div>
               )}
+            </div>
+          )}
+          {/* Hide indefinitely control for flash collection */}
+          {collection === 'flash' && onToggleHidden && (
+            <div className="w-full mt-1 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+              <input
+                type="checkbox"
+                id={`hidden-${image.url}`}
+                checked={image.hidden === 'true' || image.hidden === true}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onToggleHidden(image.url, e.target.checked);
+                }}
+                className="w-4 h-4 text-[#7B894C] border-gray-300 rounded focus:ring-[#7B894C] cursor-pointer"
+              />
+              <label
+                htmlFor={`hidden-${image.url}`}
+                className="text-[10px] text-gray-600 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                title="Hide this image from the live site indefinitely. The image URL will still work for emails/links, but it won't appear on the home page."
+              >
+                Hide indefinitely (keeps URL active)
+              </label>
             </div>
           )}
           <button

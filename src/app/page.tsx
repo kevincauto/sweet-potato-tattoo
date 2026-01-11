@@ -42,7 +42,76 @@ export default async function Home() {
   const schedulesRaw = (await kv.hgetall('flash-schedules')) as Record<string, string> | null;
   const schedulesMap = schedulesRaw ?? {};
 
-  // Filter images based on schedule (only show if current ET time >= schedule time)
+  // Get hidden status for flash images (url -> 'true' or true if hidden)
+  // Note: Vercel KV may return boolean true or string 'true'
+  const hiddenRaw = (await kv.hgetall('flash-hidden')) as Record<string, string | boolean> | null;
+  const hiddenMap = hiddenRaw ?? {};
+  
+  // Create a comprehensive hidden map that handles all URL encoding variations
+  // This ensures we can match URLs regardless of encoding differences
+  const comprehensiveHiddenMap: Record<string, boolean> = {};
+  
+  Object.keys(hiddenMap).forEach(key => {
+    // Check if value indicates hidden (handles both boolean true and string 'true')
+    const value = hiddenMap[key];
+    if (value === true || value === 'true') {
+      // Store the original key
+      comprehensiveHiddenMap[key] = true;
+      
+      // Generate all encoding variations
+      const variations = new Set<string>();
+      variations.add(key);
+      
+      // Try decoding variations (handles %20 -> space, %2520 -> %20)
+      try {
+        const decoded1 = decodeURIComponent(key);
+        variations.add(decoded1);
+        // Encode the decoded version to get single-encoded
+        try {
+          const encoded1 = encodeURI(decoded1);
+          variations.add(encoded1);
+        } catch {}
+        
+        // Try double-decoding (handles %2520 -> %20 -> space)
+        try {
+          const decoded2 = decodeURIComponent(decoded1);
+          variations.add(decoded2);
+          // Encode twice to get double-encoded
+          try {
+            const encoded2 = encodeURI(encodeURI(decoded2));
+            variations.add(encoded2);
+          } catch {}
+        } catch {}
+      } catch {}
+      
+      // Try encoding the original key to get double-encoded version
+      // This handles the case where key is "spotted%20bucking%20horse" and we need "spotted%2520bucking%2520horse"
+      try {
+        // Replace %20 with %2520 to get double-encoded version
+        const doubleEncoded = key.replace(/%20/g, '%2520');
+        variations.add(doubleEncoded);
+        // Also try triple-encoded
+        const tripleEncoded = doubleEncoded.replace(/%20/g, '%2520');
+        variations.add(tripleEncoded);
+      } catch {}
+      
+      // Mark all variations as hidden
+      variations.forEach(variation => {
+        comprehensiveHiddenMap[variation] = true;
+      });
+    }
+  });
+  
+  // Debug: Check URL formats (temporary)
+  if (imageUrls.length > 0 && Object.keys(hiddenMap).length > 0) {
+    const sampleUrl = imageUrls[0];
+    console.log('Sample URL from list:', sampleUrl);
+    console.log('Hidden map keys:', Object.keys(hiddenMap));
+    console.log('Direct match in hiddenMap?', hiddenMap[sampleUrl]);
+    console.log('Direct match in comprehensiveHiddenMap?', comprehensiveHiddenMap[sampleUrl]);
+  }
+
+  // Filter images based on schedule and hidden status
   // Get current time in ET
   const now = new Date();
   const nowETStr = now.toLocaleString('en-US', { 
@@ -62,7 +131,83 @@ export default async function Home() {
   const nowET = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:${seconds.padStart(2, '0')}`);
   
   const visibleBlobs = existingBlobs.filter(blob => {
-    const schedule = schedulesMap[blob.url];
+    // First check if image is hidden indefinitely
+    // Generate all possible URL encoding variations for comparison
+    const urlVariations = new Set<string>();
+    urlVariations.add(blob.url);
+    
+    // Try decoding (handles double-encoding like %2520 -> %20)
+    try {
+      const decoded = decodeURIComponent(blob.url);
+      urlVariations.add(decoded);
+      // Also try encoding the decoded version
+      urlVariations.add(encodeURI(decoded));
+    } catch {}
+    
+    // Try double-decoding (handles triple-encoding)
+    try {
+      const doubleDecoded = decodeURIComponent(decodeURIComponent(blob.url));
+      urlVariations.add(doubleDecoded);
+      urlVariations.add(encodeURI(doubleDecoded));
+    } catch {}
+    
+    // Check if any variation is hidden using the comprehensive map or direct hiddenMap
+    const urlArray = Array.from(urlVariations);
+    
+    // Helper to check if a value indicates hidden (handles both boolean true and string 'true')
+    const isHiddenValue = (value: any): boolean => {
+      return value === true || value === 'true';
+    };
+    
+    // First check the exact URL from the list (most common case)
+    let isHidden = isHiddenValue(hiddenMap[blob.url]) || comprehensiveHiddenMap[blob.url] === true;
+    
+    // If not found, check all variations
+    if (!isHidden) {
+      isHidden = urlArray.some(url => {
+        const inComprehensive = comprehensiveHiddenMap[url] === true;
+        const inDirect = isHiddenValue(hiddenMap[url]);
+        return inComprehensive || inDirect;
+      });
+    }
+    
+    // Debug for the specific horse image
+    if (blob.url.includes('bucking')) {
+      const directCheck = hiddenMap[blob.url];
+      const directComprehensiveCheck = comprehensiveHiddenMap[blob.url];
+      const allChecks = urlArray.map(u => ({ 
+        url: u, 
+        inComprehensive: comprehensiveHiddenMap[u] === true,
+        inDirect: hiddenMap[u] === 'true',
+        directValue: hiddenMap[u],
+        type: typeof hiddenMap[u]
+      }));
+      const matchingKeys = urlArray.filter(url => 
+        comprehensiveHiddenMap[url] === true || hiddenMap[url] === 'true'
+      );
+      console.log('Horse image check:', {
+        url: blob.url,
+        directCheck,
+        directComprehensiveCheck,
+        directCheckType: typeof directCheck,
+        directCheckEqualsTrue: directCheck === 'true',
+        variations: urlArray,
+        hiddenMapKeys: Object.keys(hiddenMap).filter(k => k.includes('bucking')),
+        comprehensiveMapKeys: Object.keys(comprehensiveHiddenMap).filter(k => k.includes('bucking')),
+        matchingKeys,
+        isHidden,
+        allChecks
+      });
+    }
+    
+    if (isHidden) {
+      return false; // Hidden images never show
+    }
+    
+    // Then check schedule
+    const schedule = Array.from(urlVariations)
+      .map(url => schedulesMap[url])
+      .find(s => s !== undefined);
     if (!schedule) return true; // No schedule = visible immediately
     const scheduleDate = new Date(schedule);
     return nowET >= scheduleDate; // Show if current ET time >= schedule time

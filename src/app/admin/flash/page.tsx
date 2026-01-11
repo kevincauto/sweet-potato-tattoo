@@ -8,7 +8,7 @@ import DraggableImageGrid from '../../../components/DraggableImageGrid';
 export default function FlashAdminPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
-  interface ImgItem { url: string; caption?: string; category?: string; schedule?: string }
+  interface ImgItem { url: string; caption?: string; category?: string; schedule?: string; hidden?: string }
   const CATEGORY_OPTIONS = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash', 'Discount Flash'] as const;
   const [images, setImages] = useState<ImgItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,6 +105,36 @@ export default function FlashAdminPage() {
         it.url === url ? { ...it, schedule: schedule || undefined } : it
       )
     );
+  }
+
+  async function handleToggleHidden(url: string, hidden: boolean) {
+    const newHiddenValue = hidden ? 'true' : undefined;
+    
+    // Optimistically update UI immediately
+    setImages((imgs) =>
+      imgs.map((it) =>
+        it.url === url ? { ...it, hidden: newHiddenValue } : it
+      )
+    );
+    
+    try {
+      const response = await fetch(
+        `/api/upload/flash?url=${encodeURIComponent(url)}&hidden=${hidden ? 'true' : 'false'}`,
+        { method: 'PUT' }
+      );
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Failed to update hidden status:', errorText);
+        // Revert optimistic update on error
+        await fetchImages();
+        alert('Failed to update hidden status. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error updating hidden status:', error);
+      // Revert optimistic update on error
+      await fetchImages();
+      alert('Error updating hidden status. Please try again.');
+    }
   }
 
   return (
@@ -248,6 +278,7 @@ export default function FlashAdminPage() {
         onEditCaption={handleEditCaption}
         onEditCategory={handleEditCategory}
         onEditSchedule={handleEditSchedule}
+        onToggleHidden={handleToggleHidden}
         editingUrl={editingUrl}
         setEditingUrl={setEditingUrl}
         tempCaption={tempCaption}

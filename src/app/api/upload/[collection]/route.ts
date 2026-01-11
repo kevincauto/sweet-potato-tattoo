@@ -107,17 +107,33 @@ export async function GET(_: Request, { params }: any) {
     }
   }
 
-  // Return items with captions, categories, and schedules
+  // Return items with captions, categories, schedules, and hidden status
   const items = await Promise.all(
     uniqueUrls.map(async (url) => {
       const caption = (await kv.hget('captions', url)) as string | null;
       let category: string | null = null;
       let schedule: string | null = null;
+      let hidden: string | null = null;
       if (collection === 'flash') {
         category = (await kv.hget('flash-categories', url)) as string | null;
         schedule = (await kv.hget('flash-schedules', url)) as string | null;
+        
+        // Check hidden status with URL normalization (try both original and decoded)
+        hidden = (await kv.hget('flash-hidden', url)) as string | null;
+        if (!hidden) {
+          try {
+            const decodedUrl = decodeURIComponent(url);
+            hidden = (await kv.hget('flash-hidden', decodedUrl)) as string | null;
+          } catch {}
+        }
+        if (!hidden) {
+          try {
+            const encodedUrl = encodeURI(url);
+            hidden = (await kv.hget('flash-hidden', encodedUrl)) as string | null;
+          } catch {}
+        }
       }
-      return { url, caption: caption || '', category: category || '', schedule: schedule || '' };
+      return { url, caption: caption || '', category: category || '', schedule: schedule || '', hidden: hidden || '' };
     })
   );
 
@@ -125,14 +141,24 @@ export async function GET(_: Request, { params }: any) {
 }
 
 // ───────────────────────── PUT /api/upload/:collection?url=&caption=
-export async function PUT(request: Request) {
+export async function PUT(request: Request, { params }: any) {
+  const { collection } = await params;
   const { searchParams } = new URL(request.url);
-  const url = searchParams.get('url');
+  let url = searchParams.get('url');
   const caption = searchParams.get('caption') || '';
   const category = searchParams.get('category');
   const schedule = searchParams.get('schedule'); // ISO string or empty string to clear
-  const collection = searchParams.get('collection');
+  const hidden = searchParams.get('hidden'); // 'true' or 'false' or empty string to clear
   if (!url) return NextResponse.json({ error: 'url required' }, { status: 400 });
+  
+  // Normalize URL to match how it's stored in the list (decode once to handle double-encoding)
+  // The URL from query params might be double-encoded, but we store it in the same format as the list
+  try {
+    // Decode once to normalize (handles %2520 -> %20)
+    url = decodeURIComponent(url);
+  } catch {
+    // If decoding fails, use original
+  }
   if (caption !== null) {
     await kv.hset('captions', { [url]: caption });
   }
@@ -149,6 +175,64 @@ export async function PUT(request: Request) {
         await kv.hdel('flash-schedules', url);
       } else {
         await kv.hset('flash-schedules', { [url]: schedule });
+      }
+    }
+    // Handle hidden: if 'true', save; if 'false' or empty, delete
+    if (hidden !== null) {
+      // Use the normalized URL (already decoded above)
+      if (hidden === 'true') {
+        await kv.hset('flash-hidden', { [url]: 'true' });
+        console.log(`Set hidden=true for URL: ${url}`);
+      } else {
+        // Delete all URL encoding variations to ensure complete removal
+        // First, get all keys from the hash to find matching variations
+        const allHiddenKeys = await kv.hgetall('flash-hidden') as Record<string, any> | null;
+        const variationsToDelete: string[] = [];
+        
+        if (allHiddenKeys) {
+          // Find all keys that match this URL (in any encoding)
+          const urlVariations = new Set<string>([url]);
+          try {
+            const decoded = decodeURIComponent(url);
+            urlVariations.add(decoded);
+            const encoded = encodeURI(decoded);
+            urlVariations.add(encoded);
+            const doubleEncoded = url.replace(/%20/g, '%2520');
+            urlVariations.add(doubleEncoded);
+          } catch {}
+          
+          // Find matching keys in the hash
+          Object.keys(allHiddenKeys).forEach(key => {
+            // Check if this key matches any of our URL variations
+            if (urlVariations.has(key)) {
+              variationsToDelete.push(key);
+            }
+            // Also check if keys are encoding variations of each other
+            try {
+              const keyDecoded = decodeURIComponent(key);
+              if (urlVariations.has(keyDecoded) || urlVariations.has(key)) {
+                variationsToDelete.push(key);
+              }
+            } catch {}
+          });
+        }
+        
+        // If no variations found, try the original URL and common variations
+        if (variationsToDelete.length === 0) {
+          variationsToDelete.push(url);
+          try {
+            const doubleEncoded = url.replace(/%20/g, '%2520');
+            variationsToDelete.push(doubleEncoded);
+            const singleEncoded = url.replace(/%2520/g, '%20');
+            variationsToDelete.push(singleEncoded);
+          } catch {}
+        }
+        
+        // Delete all variations
+        for (const variation of variationsToDelete) {
+          await kv.hdel('flash-hidden', variation);
+        }
+        console.log(`Removed hidden status for URLs: ${variationsToDelete.join(', ')}`);
       }
     }
   }
@@ -234,6 +318,7 @@ export async function DELETE(request: Request, { params }: any) {
   if (collection === 'flash') {
     await kv.hdel('flash-categories', url);
     await kv.hdel('flash-schedules', url);
+    await kv.hdel('flash-hidden', url);
   }
   return NextResponse.json({ message: 'File deleted.' });
 } 
