@@ -182,7 +182,6 @@ export async function PUT(request: Request, { params }: any) {
       // Use the normalized URL (already decoded above)
       if (hidden === 'true') {
         await kv.hset('flash-hidden', { [url]: 'true' });
-        console.log(`Set hidden=true for URL: ${url}`);
       } else {
         // Delete all URL encoding variations to ensure complete removal
         // First, get all keys from the hash to find matching variations
@@ -232,7 +231,6 @@ export async function PUT(request: Request, { params }: any) {
         for (const variation of variationsToDelete) {
           await kv.hdel('flash-hidden', variation);
         }
-        console.log(`Removed hidden status for URLs: ${variationsToDelete.join(', ')}`);
       }
     }
   }

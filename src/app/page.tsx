@@ -101,15 +101,6 @@ export default async function Home() {
       });
     }
   });
-  
-  // Debug: Check URL formats (temporary)
-  if (imageUrls.length > 0 && Object.keys(hiddenMap).length > 0) {
-    const sampleUrl = imageUrls[0];
-    console.log('Sample URL from list:', sampleUrl);
-    console.log('Hidden map keys:', Object.keys(hiddenMap));
-    console.log('Direct match in hiddenMap?', hiddenMap[sampleUrl]);
-    console.log('Direct match in comprehensiveHiddenMap?', comprehensiveHiddenMap[sampleUrl]);
-  }
 
   // Filter images based on schedule and hidden status
   // Get current time in ET
@@ -168,35 +159,6 @@ export default async function Home() {
         const inComprehensive = comprehensiveHiddenMap[url] === true;
         const inDirect = isHiddenValue(hiddenMap[url]);
         return inComprehensive || inDirect;
-      });
-    }
-    
-    // Debug for the specific horse image
-    if (blob.url.includes('bucking')) {
-      const directCheck = hiddenMap[blob.url];
-      const directComprehensiveCheck = comprehensiveHiddenMap[blob.url];
-      const allChecks = urlArray.map(u => ({ 
-        url: u, 
-        inComprehensive: comprehensiveHiddenMap[u] === true,
-        inDirect: hiddenMap[u] === 'true',
-        directValue: hiddenMap[u],
-        type: typeof hiddenMap[u]
-      }));
-      const matchingKeys = urlArray.filter(url => 
-        comprehensiveHiddenMap[url] === true || hiddenMap[url] === 'true'
-      );
-      console.log('Horse image check:', {
-        url: blob.url,
-        directCheck,
-        directComprehensiveCheck,
-        directCheckType: typeof directCheck,
-        directCheckEqualsTrue: directCheck === 'true',
-        variations: urlArray,
-        hiddenMapKeys: Object.keys(hiddenMap).filter(k => k.includes('bucking')),
-        comprehensiveMapKeys: Object.keys(comprehensiveHiddenMap).filter(k => k.includes('bucking')),
-        matchingKeys,
-        isHidden,
-        allChecks
       });
     }
     

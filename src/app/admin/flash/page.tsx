@@ -8,7 +8,7 @@ import DraggableImageGrid from '../../../components/DraggableImageGrid';
 export default function FlashAdminPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
-  interface ImgItem { url: string; caption?: string; category?: string; schedule?: string; hidden?: string }
+  interface ImgItem { url: string; caption?: string; category?: string; schedule?: string; hidden?: string | boolean }
   const CATEGORY_OPTIONS = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash', 'Discount Flash'] as const;
   const [images, setImages] = useState<ImgItem[]>([]);
   const [loading, setLoading] = useState(true);
