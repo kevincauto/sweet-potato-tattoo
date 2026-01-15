@@ -110,7 +110,27 @@ export async function GET(_: Request, { params }: any) {
   // Return items with captions, categories, schedules, and hidden status
   const items = await Promise.all(
     uniqueUrls.map(async (url) => {
-      const caption = (await kv.hget('captions', url)) as string | null;
+      // Check caption with URL normalization (try multiple encoding variations)
+      let caption = (await kv.hget('captions', url)) as string | null;
+      if (!caption) {
+        try {
+          const decodedUrl = decodeURIComponent(url);
+          caption = (await kv.hget('captions', decodedUrl)) as string | null;
+        } catch {}
+      }
+      if (!caption) {
+        try {
+          const encodedUrl = encodeURI(url);
+          caption = (await kv.hget('captions', encodedUrl)) as string | null;
+        } catch {}
+      }
+      if (!caption) {
+        try {
+          const doubleEncoded = url.replace(/%20/g, '%2520');
+          caption = (await kv.hget('captions', doubleEncoded)) as string | null;
+        } catch {}
+      }
+      
       let category: string | null = null;
       let schedule: string | null = null;
       let hidden: string | null = null;

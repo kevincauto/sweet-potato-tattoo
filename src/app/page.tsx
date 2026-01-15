@@ -32,7 +32,35 @@ export default async function Home() {
   
   // Get captions
   const captionsRaw = (await kv.hgetall('captions')) as Record<string, string> | null;
-  const captionsMap = captionsRaw ?? {};
+  const captionsRawMap = captionsRaw ?? {};
+  
+  // Create a normalized captions map that handles URL encoding variations
+  // This ensures captions can be found regardless of encoding differences
+  const captionsMap: Record<string, string> = {};
+  
+  // For each URL in the list, try to find its caption in all encoding variations
+  existingBlobs.forEach(blob => {
+    // Try direct match first
+    if (captionsRawMap[blob.url]) {
+      captionsMap[blob.url] = captionsRawMap[blob.url];
+      return;
+    }
+    
+    // Try URL encoding variations
+    const urlVariations = [
+      decodeURIComponent(blob.url),
+      encodeURI(blob.url),
+      blob.url.replace(/%20/g, '%2520'),
+      blob.url.replace(/%2520/g, '%20'),
+    ];
+    
+    for (const variation of urlVariations) {
+      if (captionsRawMap[variation]) {
+        captionsMap[blob.url] = captionsRawMap[variation];
+        return;
+      }
+    }
+  });
 
   // Get categories for flash images (url -> category)
   const categoriesRaw = (await kv.hgetall('flash-categories')) as Record<string, string> | null;
