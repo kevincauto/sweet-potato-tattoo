@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import GalleryModal from '@/components/GalleryModal';
+import FlashCTA from '@/components/FlashCTA';
 
 interface BlobData {
   url: string;
@@ -15,9 +16,10 @@ interface FlashGridProps {
   images: BlobData[];
   captionsMap: Record<string, string>;
   categoriesMap?: Record<string, string>;
+  allImageUrls?: string[]; // All image URLs for the FlashCTA banner
 }
 
-export default function FlashGrid({ images, captionsMap, categoriesMap = {} }: FlashGridProps) {
+export default function FlashGrid({ images, captionsMap, categoriesMap = {}, allImageUrls = [] }: FlashGridProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   
@@ -82,29 +84,66 @@ export default function FlashGrid({ images, captionsMap, categoriesMap = {} }: F
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-        {viewItems.map(({ blob, index }) => (
-          <div 
-            key={index} 
-            className="relative group aspect-[5/6] overflow-hidden rounded-lg cursor-pointer"
-            onClick={() => openModal(index)}
-          >
-            <Image
-              src={blob.url}
-              alt={`Flash image ${index + 1}`}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-50"
-            />
-            {captionsMap[blob.url] && (
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">
-                <p className="text-white text-sm text-center leading-relaxed drop-shadow-lg whitespace-pre-line">
-                  {captionsMap[blob.url]}
-                </p>
+      <div className="space-y-6">
+        {(() => {
+          const chunks: Array<{ type: 'images' | 'banner'; items: typeof viewItems }> = [];
+          const chunkSize = 24;
+          
+          // Split viewItems into chunks of 24
+          for (let i = 0; i < viewItems.length; i += chunkSize) {
+            const chunk = viewItems.slice(i, i + chunkSize);
+            chunks.push({ type: 'images', items: chunk });
+            
+            // Add banner after each chunk only if there are at least 24 more images after it
+            const remainingImages = viewItems.length - (i + chunkSize);
+            if (remainingImages >= 24) {
+              chunks.push({ type: 'banner', items: [] });
+            }
+          }
+          
+          return chunks.map((chunk, chunkIndex) => {
+            if (chunk.type === 'banner') {
+              return (
+                <FlashCTA 
+                  key={`banner-${chunkIndex}`} 
+                  imageUrls={allImageUrls} 
+                  variant="to-booking"
+                  useStaticBackground={true}
+                />
+              );
+            }
+            
+            return (
+              <div 
+                key={`images-${chunkIndex}`}
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
+              >
+                {chunk.items.map(({ blob, index }) => (
+                  <div 
+                    key={index} 
+                    className="relative group aspect-[5/6] overflow-hidden rounded-lg cursor-pointer"
+                    onClick={() => openModal(index)}
+                  >
+                    <Image
+                      src={blob.url}
+                      alt={`Flash image ${index + 1}`}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-50"
+                    />
+                    {captionsMap[blob.url] && (
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">
+                        <p className="text-white text-sm text-center leading-relaxed drop-shadow-lg whitespace-pre-line">
+                          {captionsMap[blob.url]}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
-        ))}
+            );
+          });
+        })()}
       </div>
 
       {/* Modal */}

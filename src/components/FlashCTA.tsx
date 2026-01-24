@@ -7,39 +7,54 @@ import Link from "next/link";
 type FlashCTAProps = {
   imageUrls: string[];
   variant?: 'to-flash' | 'to-booking';
+  useStaticBackground?: boolean; // If true, use fuzzy1.jpg instead of dynamic flash images
 };
 
-export default function FlashCTA({ imageUrls, variant = 'to-flash' }: FlashCTAProps) {
+export default function FlashCTA({ imageUrls, variant = 'to-flash', useStaticBackground = false }: FlashCTAProps) {
   const images = useMemo(() => imageUrls.slice(0, 20).filter(url => url && url.trim().length > 0), [imageUrls]);
 
-  if (images.length === 0) return null;
+  if (!useStaticBackground && images.length === 0) return null;
 
   return (
     <section className="relative my-8 w-screen overflow-hidden left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
       {/* Make the band full-bleed */}
       <div className="relative w-screen">
         <div className="relative h-[260px] sm:h-[300px] overflow-hidden">
-          {/* Scrolling strip */}
-          <div className="absolute inset-0 bg-gray-200">
-            <div className="marquee h-full z-0">
-              <div className="marquee-track h-full flex items-center gap-2">
-                {[...images, ...images].map((url, i) => (
-                  <div key={`${url}-${i}`} className="relative h-full w-[45vw] sm:w-[35vw] md:w-[28vw] lg:w-[22vw] flex-shrink-0">
-                    <Image
-                      src={url}
-                      alt="Flash background"
-                      fill
-                      sizes="(max-width: 640px) 45vw, (max-width: 768px) 35vw, (max-width: 1024px) 28vw, 22vw"
-                      className="object-cover"
-                      loading="eager"
-                      priority={i < 4}
-                    />
-                  </div>
-                ))}
-              </div>
+          {/* Background - either static image or dynamic flash images */}
+          {useStaticBackground ? (
+            <div className="absolute inset-0">
+              <Image
+                src="/fuzzy1.jpg"
+                alt="Background"
+                fill
+                sizes="100vw"
+                className="object-cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-black/25 z-[1]" />
             </div>
-            <div className="absolute inset-0 bg-black/25 z-[1]" />
-          </div>
+          ) : (
+            <div className="absolute inset-0 bg-gray-200">
+              <div className="marquee h-full z-0">
+                <div className="marquee-track h-full flex items-center gap-2">
+                  {[...images, ...images].map((url, i) => (
+                    <div key={`${url}-${i}`} className="relative h-full w-[45vw] sm:w-[35vw] md:w-[28vw] lg:w-[22vw] flex-shrink-0">
+                      <Image
+                        src={url}
+                        alt="Flash background"
+                        fill
+                        sizes="(max-width: 640px) 45vw, (max-width: 768px) 35vw, (max-width: 1024px) 28vw, 22vw"
+                        className="object-cover"
+                        loading="eager"
+                        priority={i < 4}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="absolute inset-0 bg-black/25 z-[1]" />
+            </div>
+          )}
 
           {/* Content */}
           <div className="relative z-10 flex items-center justify-center h-full px-4">

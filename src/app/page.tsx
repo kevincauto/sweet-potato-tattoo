@@ -274,11 +274,12 @@ export default async function Home() {
           images={visibleBlobs}
           captionsMap={captionsMap}
           categoriesMap={categoriesMap}
+          allImageUrls={imageUrls}
         />
       </main>
       
       {/* Flash CTA - full-bleed under flash grid, above footer */}
-      <FlashCTA imageUrls={imageUrls} variant="to-booking" />
+      <FlashCTA imageUrls={imageUrls} variant="to-booking" useStaticBackground={true} />
     </>
   );
 }
