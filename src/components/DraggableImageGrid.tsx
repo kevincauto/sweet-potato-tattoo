@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import Image from 'next/image';
+import { getStableCloudinaryUrl, stripCloudinaryVersion } from '@/lib/cloudinaryUrl';
 
 // Helper function to convert ET ISO string to datetime-local format
 // The datetime-local input will show the ET time directly (user needs to think in ET)
@@ -105,6 +106,8 @@ interface ImgItem {
   category?: string;
   schedule?: string;
   hidden?: string | boolean; // 'true' or true if hidden indefinitely
+  claimed?: string | boolean; // 'true' or true if claimed/booked
+  rev?: string; // cache-buster revision for overwritten images
 }
 
 interface DraggableImageGridProps {
@@ -115,6 +118,7 @@ interface DraggableImageGridProps {
   onEditCategory?: (url: string, category: string) => void;
   onEditSchedule?: (url: string, schedule: string) => void;
   onToggleHidden?: (url: string, hidden: boolean) => void;
+  onToggleClaimed?: (url: string, claimed: boolean) => void;
   editingUrl: string | null;
   setEditingUrl: (url: string | null) => void;
   tempCaption: string;
@@ -132,6 +136,7 @@ export default function DraggableImageGrid({
   onEditCategory,
   onEditSchedule,
   onToggleHidden,
+  onToggleClaimed,
   editingUrl,
   setEditingUrl,
   tempCaption,
@@ -241,11 +246,14 @@ export default function DraggableImageGrid({
             {index + 1}
           </div>
           <Image
-            src={image.url}
+            key={`${image.url}-${image.rev ?? ''}`}
+            src={getStableCloudinaryUrl(image.url, image.rev)}
             alt={image.caption ?? 'image'}
             width={300}
             height={200}
             className="rounded-lg object-cover w-full" 
+            // Admin preview: bypass Next/Image optimizer caching so overwrites show immediately.
+            unoptimized
           />
           {editingUrl === image.url ? (
             <textarea
@@ -274,10 +282,12 @@ export default function DraggableImageGrid({
           {/* Copy URL button */}
           <div className="w-full mt-1">
             <button
-              onClick={() => {
-                navigator.clipboard.writeText(image.url);
+              onClick={(e) => {
+                // Copy a versionless URL so the link always resolves to the latest (overwritten) asset.
+                navigator.clipboard.writeText(stripCloudinaryVersion(image.url));
+
                 // Optional: Show a brief confirmation
-                const button = event?.target as HTMLButtonElement;
+                const button = e.currentTarget;
                 const originalText = button.textContent;
                 button.textContent = 'Copied!';
                 setTimeout(() => {
@@ -378,6 +388,38 @@ export default function DraggableImageGrid({
               >
                 Hide indefinitely (keeps URL active)
               </label>
+            </div>
+          )}
+          {/* Claimed control for flash collection */}
+          {collection === 'flash' && onToggleClaimed && (
+            <div className="w-full mt-1" onClick={(e) => e.stopPropagation()}>
+              {image.claimed === 'processing' ? (
+                <button
+                  type="button"
+                  disabled
+                  className="w-full bg-gray-300 text-gray-700 px-3 py-2 rounded-lg text-xs cursor-not-allowed flex items-center justify-center gap-2"
+                  title="Processing..."
+                >
+                  <span className="inline-block h-3 w-3 rounded-full border-2 border-gray-500 border-t-transparent animate-spin" />
+                  Processing…
+                </button>
+              ) : image.claimed === 'true' || image.claimed === true ? (
+                <div className="text-[10px] text-gray-600 text-center py-1">
+                  ✓ Design has been claimed
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleClaimed(image.url, true);
+                  }}
+                  className="w-full bg-[#7B894C] text-white px-3 py-2 rounded-lg text-xs hover:bg-[#6A7A3F] transition-colors"
+                  title="Mark this design as claimed. This will permanently edit the image and cannot be undone."
+                >
+                  Mark design as claimed
+                </button>
+              )}
             </div>
           )}
           <button

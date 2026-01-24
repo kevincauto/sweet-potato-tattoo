@@ -4,6 +4,7 @@
 import { NextResponse } from 'next/server';
 import { kv } from '@vercel/kv';
 import cloudinary from '@/lib/cloudinary';
+import { stripCloudinaryVersion } from '@/lib/cloudinaryUrl';
 
 // ───────────────────────── POST /api/upload/:collection
 export async function POST(request: Request, { params }: any) {
@@ -134,6 +135,8 @@ export async function GET(_: Request, { params }: any) {
       let category: string | null = null;
       let schedule: string | null = null;
       let hidden: string | null = null;
+      let claimed: string | boolean | null = null;
+      let rev: string | null = null;
       if (collection === 'flash') {
         category = (await kv.hget('flash-categories', url)) as string | null;
         
@@ -178,8 +181,43 @@ export async function GET(_: Request, { params }: any) {
             hidden = (await kv.hget('flash-hidden', doubleEncoded)) as string | null;
           } catch {}
         }
+        
+        // Check claimed status with URL normalization (try multiple encoding variations)
+        claimed = (await kv.hget('flash-claimed', url)) as string | boolean | null;
+        if (!claimed) {
+          try {
+            const decodedUrl = decodeURIComponent(url);
+            claimed = (await kv.hget('flash-claimed', decodedUrl)) as string | boolean | null;
+          } catch {}
+        }
+        if (!claimed) {
+          try {
+            const encodedUrl = encodeURI(url);
+            claimed = (await kv.hget('flash-claimed', encodedUrl)) as string | boolean | null;
+          } catch {}
+        }
+        if (!claimed) {
+          try {
+            const doubleEncoded = url.replace(/%20/g, '%2520');
+            claimed = (await kv.hget('flash-claimed', doubleEncoded)) as string | boolean | null;
+          } catch {}
+        }
+
+        // Revision for image cache-busting (keyed by versionless Cloudinary URL)
+        try {
+          const stableUrl = stripCloudinaryVersion(url);
+          rev = (await kv.hget('flash-image-rev', stableUrl)) as string | null;
+
+          // Backfill: older claimed images might not have a rev yet. If the image is claimed and rev is missing,
+          // generate one so the public site immediately busts Next/Image's cache.
+          const isClaimed = claimed === true || claimed === 'true';
+          if (isClaimed && (!rev || rev.length === 0)) {
+            rev = Date.now().toString();
+            await kv.hset('flash-image-rev', { [stableUrl]: rev });
+          }
+        } catch {}
       }
-      return { url, caption: caption || '', category: category || '', schedule: schedule || '', hidden: hidden || '' };
+      return { url, caption: caption || '', category: category || '', schedule: schedule || '', hidden: hidden || '', claimed: claimed || '', rev: rev || '' };
     })
   );
 
@@ -195,6 +233,7 @@ export async function PUT(request: Request, { params }: any) {
   const category = searchParams.get('category');
   const schedule = searchParams.get('schedule'); // ISO string or empty string to clear
   const hidden = searchParams.get('hidden'); // 'true' or 'false' or empty string to clear
+  const claimed = searchParams.get('claimed'); // 'true' or 'false' or empty string to clear
   if (!url) return NextResponse.json({ error: 'url required' }, { status: 400 });
   
   // Normalize URL to match how it's stored in the list (decode once to handle double-encoding)
@@ -276,6 +315,60 @@ export async function PUT(request: Request, { params }: any) {
         // Delete all variations
         for (const variation of variationsToDelete) {
           await kv.hdel('flash-hidden', variation);
+        }
+      }
+    }
+    // Handle claimed: if 'true', save; if 'false' or empty, delete
+    if (claimed !== null && collection === 'flash') {
+      // Get all keys from the hash to find matching variations
+      const allClaimedKeys = await kv.hgetall('flash-claimed') as Record<string, any> | null;
+      const variationsToDelete: string[] = [];
+      
+      if (allClaimedKeys) {
+        // Find all keys that match this URL (in any encoding)
+        const urlVariations = new Set<string>([url]);
+        try {
+          const decoded = decodeURIComponent(url);
+          urlVariations.add(decoded);
+          const encoded = encodeURI(decoded);
+          urlVariations.add(encoded);
+          const doubleEncoded = url.replace(/%20/g, '%2520');
+          urlVariations.add(doubleEncoded);
+        } catch {}
+        
+        // Find matching keys in the hash
+        Object.keys(allClaimedKeys).forEach(key => {
+          // Check if this key matches any of our URL variations
+          if (urlVariations.has(key)) {
+            variationsToDelete.push(key);
+          }
+          // Also check if keys are encoding variations of each other
+          try {
+            const keyDecoded = decodeURIComponent(key);
+            if (urlVariations.has(keyDecoded) || urlVariations.has(key)) {
+              variationsToDelete.push(key);
+            }
+          } catch {}
+        });
+      }
+      
+      // If no variations found, try the original URL and common variations
+      if (variationsToDelete.length === 0) {
+        variationsToDelete.push(url);
+        try {
+          const doubleEncoded = url.replace(/%20/g, '%2520');
+          variationsToDelete.push(doubleEncoded);
+          const singleEncoded = url.replace(/%2520/g, '%20');
+          variationsToDelete.push(singleEncoded);
+        } catch {}
+      }
+      
+      if (claimed === 'true') {
+        await kv.hset('flash-claimed', { [url]: 'true' });
+      } else {
+        // Delete all variations
+        for (const variation of variationsToDelete) {
+          await kv.hdel('flash-claimed', variation);
         }
       }
     }

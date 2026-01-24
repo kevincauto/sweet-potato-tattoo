@@ -2,6 +2,7 @@ import { kv } from '@vercel/kv';
 import NewsletterSection from '@/components/NewsletterSection';
 import FlashGrid from '@/components/FlashGrid';
 import FlashCTA from '@/components/FlashCTA';
+import { stripCloudinaryVersion } from '@/lib/cloudinaryUrl';
 
 // Ensure fresh data on every request in production
 export const dynamic = 'force-dynamic';
@@ -27,8 +28,16 @@ export default async function Home() {
     imageUrls = await kv.lrange('images', 0, -1);
   }
   
-  // Convert URLs to BlobData format (components only need url property)
-  const existingBlobs = imageUrls.map(url => ({ url }));
+  // Pull per-image revision cache-busters (used to force Next/Image to refetch after Cloudinary overwrite)
+  const revRaw = (await kv.hgetall('flash-image-rev')) as Record<string, string> | null;
+  const revMap = revRaw ?? {};
+
+  // Convert URLs to BlobData format
+  const existingBlobs = imageUrls.map((url) => {
+    const stableUrl = stripCloudinaryVersion(url);
+    const rev = revMap[stableUrl];
+    return { url, rev };
+  });
   
   // Get captions
   const captionsRaw = (await kv.hgetall('captions')) as Record<string, string> | null;
@@ -74,6 +83,48 @@ export default async function Home() {
   // Note: Vercel KV may return boolean true or string 'true'
   const hiddenRaw = (await kv.hgetall('flash-hidden')) as Record<string, string | boolean> | null;
   const hiddenMap = hiddenRaw ?? {};
+
+  // Get claimed status for flash images (url -> 'true' or true if claimed)
+  const claimedRaw = (await kv.hgetall('flash-claimed')) as Record<string, string | boolean> | null;
+  const claimedMap = claimedRaw ?? {};
+
+  // Self-heal: older claimed images may not yet have a `rev` entry (added later).
+  // Without a rev, Next/Image can serve a stale cached version forever (even in incognito),
+  // so if an image is claimed and missing a rev, generate one and persist it.
+  const isClaimedValue = (v: unknown) => v === true || v === 'true';
+  const pendingRevUpdates: Record<string, string> = {};
+
+  existingBlobs.forEach((blob) => {
+    const url = blob.url;
+    const stableUrl = stripCloudinaryVersion(url);
+
+    // Determine claimed status using a few URL variations (encoding mismatches happen in KV keys).
+    const variants = new Set<string>([url, stableUrl]);
+    try {
+      variants.add(decodeURIComponent(url));
+    } catch {}
+    try {
+      variants.add(encodeURI(url));
+    } catch {}
+    try {
+      variants.add(url.replace(/%20/g, '%2520'));
+    } catch {}
+    try {
+      variants.add(url.replace(/%2520/g, '%20'));
+    } catch {}
+
+    const isClaimed = Array.from(variants).some((k) => isClaimedValue(claimedMap[k]));
+
+    if (isClaimed && (!blob.rev || blob.rev.length === 0)) {
+      const rev = Date.now().toString();
+      blob.rev = rev;
+      pendingRevUpdates[stableUrl] = rev;
+    }
+  });
+
+  if (Object.keys(pendingRevUpdates).length > 0) {
+    await kv.hset('flash-image-rev', pendingRevUpdates);
+  }
   
   // Create a comprehensive hidden map that handles all URL encoding variations
   // This ensures we can match URLs regardless of encoding differences
@@ -259,7 +310,7 @@ export default async function Home() {
             </div>
             <div className="ml-3">
               <p className="text-sm text-yellow-700 text-center">
-                <strong>Under Construction:</strong> This section may not be up to date. Please view my Instagram flash stories <a 
+                <strong>Under Construction:</strong> This section may not be up to date or include misinformation. Please view the Instagram flash stories for the most accurate information <a 
                 href="https://www.instagram.com/sweetpotatotat/" 
                 target="_blank" 
                 rel="noopener noreferrer" 
@@ -275,6 +326,7 @@ export default async function Home() {
           captionsMap={captionsMap}
           categoriesMap={categoriesMap}
           allImageUrls={imageUrls}
+          claimedMap={claimedMap}
         />
       </main>
       

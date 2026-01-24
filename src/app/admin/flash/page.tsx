@@ -8,7 +8,7 @@ import DraggableImageGrid from '../../../components/DraggableImageGrid';
 export default function FlashAdminPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
-  interface ImgItem { url: string; caption?: string; category?: string; schedule?: string; hidden?: string | boolean }
+  interface ImgItem { url: string; caption?: string; category?: string; schedule?: string; hidden?: string | boolean; claimed?: string | boolean; rev?: string }
   const CATEGORY_OPTIONS = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash', 'Discount Flash'] as const;
   const [images, setImages] = useState<ImgItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +18,8 @@ export default function FlashAdminPage() {
   const fetchImages = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/upload/flash');
+      // Force a fresh fetch so rev backfills/updates are reflected immediately after claiming.
+      const response = await fetch(`/api/upload/flash?t=${Date.now()}`, { cache: 'no-store' });
       if (response.ok) {
         const data = (await response.json()) as { items: ImgItem[] };
         setImages(data.items || []);
@@ -134,6 +135,81 @@ export default function FlashAdminPage() {
       // Revert optimistic update on error
       await fetchImages();
       alert('Error updating hidden status. Please try again.');
+    }
+  }
+
+  async function handleToggleClaimed(url: string, claimed: boolean) {
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      'Are you sure you want to mark this design as claimed?\n\n' +
+      'This will permanently edit the image to add a "Claimed" overlay. ' +
+      'The image will be modified and this action cannot be undone.\n\n' +
+      'The image URL will remain the same, so any emails or links pointing to it will automatically show the updated version.'
+    );
+    
+    if (!confirmed) {
+      return;
+    }
+    
+    // Show loading state
+    setImages((imgs) =>
+      imgs.map((it) =>
+        it.url === url ? { ...it, claimed: 'processing' } : it
+      )
+    );
+    
+    try {
+      const response = await fetch('/api/claim-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageUrl: url }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Failed to claim image:', errorData);
+        // Revert on error
+        await fetchImages();
+        alert('Failed to claim image: ' + (errorData.error || errorData.details || 'Unknown error'));
+        return;
+      }
+      
+      const result = await response.json();
+      console.log('Claim image result:', result);
+      
+      if (result.error) {
+        console.error('Error in response:', result);
+        await fetchImages();
+        alert('Failed to claim image: ' + (result.error || result.details || 'Unknown error'));
+        return;
+      }
+      
+      // Optimistically update the one item in-place so the admin preview updates immediately
+      const nextRev =
+        typeof result.rev === 'string' && result.rev.length > 0
+          ? result.rev
+          : Date.now().toString();
+
+      setImages((imgs) =>
+        imgs.map((it) =>
+          it.url === url
+            ? { ...it, claimed: true, rev: nextRev }
+            : it
+        )
+      );
+
+      // Silent background refresh to reconcile any derived fields (rev backfills, claimed booleans, etc)
+      // without making the UI feel like it "reloads".
+      fetchImages();
+
+      alert('Image has been successfully marked as claimed! The image has been updated with the claimed overlay.');
+    } catch (error) {
+      console.error('Error claiming image:', error);
+      // Revert on error
+      await fetchImages();
+      alert('Error claiming image: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   }
 
@@ -277,9 +353,10 @@ export default function FlashAdminPage() {
         onDelete={handleDelete}
         onEditCaption={handleEditCaption}
         onEditCategory={handleEditCategory}
-        onEditSchedule={handleEditSchedule}
-        onToggleHidden={handleToggleHidden}
-        editingUrl={editingUrl}
+              onEditSchedule={handleEditSchedule}
+              onToggleHidden={handleToggleHidden}
+              onToggleClaimed={handleToggleClaimed}
+              editingUrl={editingUrl}
         setEditingUrl={setEditingUrl}
         tempCaption={tempCaption}
         setTempCaption={setTempCaption}

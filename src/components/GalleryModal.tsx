@@ -3,12 +3,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { getStableCloudinaryUrl } from '@/lib/cloudinaryUrl';
 
 interface BlobData {
   url: string;
   pathname?: string;
   size?: number;
   uploadedAt?: Date;
+  rev?: string;
 }
 
 interface GalleryModalProps {
@@ -16,10 +18,10 @@ interface GalleryModalProps {
   allCaptions: Record<string, string>;
   currentIndex: number;
   onClose: () => void;
-  showBookingButton?: boolean;
+  ctaVariant?: 'none' | 'booking' | 'email';
 }
 
-export default function GalleryModal({ allImages, allCaptions, currentIndex, onClose, showBookingButton = false }: GalleryModalProps) {
+export default function GalleryModal({ allImages, allCaptions, currentIndex, onClose, ctaVariant = 'none' }: GalleryModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(currentIndex);
 
   const goToPrevious = useCallback(() => {
@@ -49,6 +51,8 @@ export default function GalleryModal({ allImages, allCaptions, currentIndex, onC
 
   const currentImage = allImages[currentImageIndex];
   const currentCaption = allCaptions[currentImage.url] || '';
+  const currentSrc = getStableCloudinaryUrl(currentImage.url, currentImage.rev);
+  const emailHref = 'mailto:SweetPotatoTattoo@gmail.com';
 
   return (
     <div 
@@ -63,7 +67,7 @@ export default function GalleryModal({ allImages, allCaptions, currentIndex, onC
         {/* Image container */}
         <div className="relative flex-1 w-full">
           <Image
-            src={currentImage.url}
+            src={currentSrc}
             alt={currentCaption || `Gallery image ${currentImageIndex + 1}`}
             fill
             className="object-contain"
@@ -77,7 +81,7 @@ export default function GalleryModal({ allImages, allCaptions, currentIndex, onC
           {currentCaption && (
             <p className="text-sm leading-relaxed whitespace-pre-line mb-3">{currentCaption}</p>
           )}
-          {showBookingButton && (
+          {ctaVariant === 'booking' && (
             <Link
               href="/booking"
               className="inline-block bg-[#7B894C] text-white text-center py-2 px-6 rounded-lg hover:bg-[#6A7A3F] transition-colors text-sm font-medium mb-3"
@@ -85,6 +89,15 @@ export default function GalleryModal({ allImages, allCaptions, currentIndex, onC
             >
               Book An Appointment
             </Link>
+          )}
+          {ctaVariant === 'email' && (
+            <a
+              href={emailHref}
+              className="inline-block bg-[#7B894C] text-white text-center py-2 px-6 rounded-lg hover:bg-[#6A7A3F] transition-colors text-sm font-medium mb-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Send An Email
+            </a>
           )}
           {allImages.length > 1 && (
             <div className="text-xs text-gray-400 pt-1">

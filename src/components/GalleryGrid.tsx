@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import GalleryModal from '@/components/GalleryModal';
+import { getStableCloudinaryUrl } from '@/lib/cloudinaryUrl';
 
 interface BlobData {
   url: string;
   pathname?: string;
   size?: number;
   uploadedAt?: Date;
+  rev?: string;
 }
 
 interface GalleryGridProps {
@@ -37,7 +39,7 @@ export default function GalleryGrid({ images, captionsMap }: GalleryGridProps) {
             onClick={() => openModal(index)}
           >
             <Image
-              src={blob.url}
+              src={getStableCloudinaryUrl(blob.url, blob.rev)}
               alt={`Gallery image ${index + 1}`}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"

@@ -2,6 +2,7 @@ import { kv } from '@vercel/kv';
 import NewsletterSection from '@/components/NewsletterSection';
 import GalleryGrid from '@/components/GalleryGrid';
 import FlashCTA from '@/components/FlashCTA';
+import { stripCloudinaryVersion } from '@/lib/cloudinaryUrl';
 
 export const metadata = {
   title: 'Gallery',
@@ -17,9 +18,17 @@ export default async function GalleryPage() {
   const imageUrls = await kv.lrange('gallery-images', 0, -1);
   // Get flash images for CTA background
   const flashUrls = await kv.lrange('flash-images', 0, -1);
+
+  // Pull per-image revision cache-busters (only used for overwritten/claimed images; harmless for gallery)
+  const revRaw = (await kv.hgetall('flash-image-rev')) as Record<string, string> | null;
+  const revMap = revRaw ?? {};
   
   // Convert URLs to BlobData format (components only need url property)
-  const existingBlobs = imageUrls.map(url => ({ url }));
+  const existingBlobs = imageUrls.map((url) => {
+    const stableUrl = stripCloudinaryVersion(url);
+    const rev = revMap[stableUrl];
+    return { url, rev };
+  });
   
   const captionsRaw = (await kv.hgetall('captions')) as Record<string, string> | null;
   const captionsMap = captionsRaw ?? {};
