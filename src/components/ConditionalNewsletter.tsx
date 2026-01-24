@@ -11,5 +11,6 @@ export default function ConditionalNewsletter() {
     return null;
   }
 
+  // NewsletterSection will check localStorage internally and hide itself if user has signed up
   return <NewsletterSection priority={false} />;
 }

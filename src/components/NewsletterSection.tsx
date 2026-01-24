@@ -1,17 +1,28 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 type NewsletterSectionProps = {
   priority?: boolean;
 };
 
+const NEWSLETTER_SIGNUP_KEY = 'newsletter_signed_up';
+
 export default function NewsletterSection({ priority = false }: NewsletterSectionProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [hasSignedUp, setHasSignedUp] = useState(false);
+
+  // Check localStorage on mount
+  useEffect(() => {
+    const signedUp = localStorage.getItem(NEWSLETTER_SIGNUP_KEY);
+    if (signedUp === 'true') {
+      setHasSignedUp(true);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +45,9 @@ export default function NewsletterSection({ priority = false }: NewsletterSectio
 
       if (response.ok) {
         console.log('Subscription successful!');
+        // Store in localStorage that user has signed up
+        localStorage.setItem(NEWSLETTER_SIGNUP_KEY, 'true');
+        setHasSignedUp(true);
         setIsSubmitted(true);
         setName('');
         setEmail('');
@@ -51,6 +65,11 @@ export default function NewsletterSection({ priority = false }: NewsletterSectio
       setIsSubmitting(false);
     }
   };
+
+  // Don't render if user has already signed up
+  if (hasSignedUp) {
+    return null;
+  }
 
   return (
     <section className="relative py-12 px-4 mb-8 w-full min-h-[300px] overflow-hidden">
@@ -114,6 +133,16 @@ export default function NewsletterSection({ priority = false }: NewsletterSectio
                       {isSubmitting ? 'Signing Up...' : 'Sign Up'}
                     </button>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      localStorage.setItem(NEWSLETTER_SIGNUP_KEY, 'true');
+                      setHasSignedUp(true);
+                    }}
+                    className="text-xs text-gray-500 hover:text-gray-700 underline text-center"
+                  >
+                    I already signed up!
+                  </button>
                 </div>
               </form>
             ) : (
