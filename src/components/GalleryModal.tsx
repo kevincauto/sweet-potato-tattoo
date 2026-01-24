@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface BlobData {
   url: string;
@@ -15,9 +16,10 @@ interface GalleryModalProps {
   allCaptions: Record<string, string>;
   currentIndex: number;
   onClose: () => void;
+  showBookingButton?: boolean;
 }
 
-export default function GalleryModal({ allImages, allCaptions, currentIndex, onClose }: GalleryModalProps) {
+export default function GalleryModal({ allImages, allCaptions, currentIndex, onClose, showBookingButton = false }: GalleryModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(currentIndex);
 
   const goToPrevious = useCallback(() => {
@@ -70,17 +72,26 @@ export default function GalleryModal({ allImages, allCaptions, currentIndex, onC
           />
         </div>
 
-        {/* Caption and Counter */}
-        {(currentCaption || allImages.length > 0) && (
-          <div className="flex-shrink-0 text-white p-3 text-center bg-black bg-opacity-20">
-            <p className="text-sm leading-relaxed whitespace-pre-line">{currentCaption}</p>
-            {allImages.length > 1 && (
-              <div className="text-xs text-gray-400 pt-1">
-                {currentImageIndex + 1} / {allImages.length}
-              </div>
-            )}
-          </div>
-        )}
+        {/* Caption, Counter, and Booking Button */}
+        <div className="flex-shrink-0 text-white p-3 text-center bg-black bg-opacity-20">
+          {currentCaption && (
+            <p className="text-sm leading-relaxed whitespace-pre-line mb-3">{currentCaption}</p>
+          )}
+          {showBookingButton && (
+            <Link
+              href="/booking"
+              className="inline-block bg-[#7B894C] text-white text-center py-2 px-6 rounded-lg hover:bg-[#6A7A3F] transition-colors text-sm font-medium mb-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Book An Appointment
+            </Link>
+          )}
+          {allImages.length > 1 && (
+            <div className="text-xs text-gray-400 pt-1">
+              {currentImageIndex + 1} / {allImages.length}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Close Button */}

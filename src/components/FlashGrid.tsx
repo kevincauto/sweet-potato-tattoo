@@ -114,6 +114,7 @@ export default function FlashGrid({ images, captionsMap, categoriesMap = {} }: F
           allCaptions={captionsMap}
           currentIndex={selectedImageIndex}
           onClose={closeModal}
+          showBookingButton={true}
         />
       )}
     </>
