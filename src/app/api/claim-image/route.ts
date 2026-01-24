@@ -50,11 +50,14 @@ export async function POST(request: Request) {
     
     // Create text box and claimed text using canvas for reliable text rendering
     // Scale appropriately for large images (these are often 3k–6k px wide)
-    // Wider box so the message typically wraps to ~3 lines (not 4)
-    const textBoxWidth = Math.min(width * 0.92, 1600);
+    // Wider box so the message typically wraps to ~3 lines (not 4),
+    // but keep a guaranteed margin so it never butts against the image edges.
+    const outerMarginX = Math.max(28, Math.round(width * 0.035));
+    const textBoxWidth = Math.min(Math.max(0, width - outerMarginX * 2), 1600);
     // Slightly shorter box to reduce unused top/bottom space
     const textBoxHeight = Math.max(175, Math.round(height * 0.14));
-    const padding = Math.max(24, Math.round(width * 0.02));
+    // Top padding (y-position) so the box stays comfortably away from the top edge.
+    const padding = Math.max(32, Math.round(height * 0.035));
     // Reduce top/bottom padding so the text can be larger and fill the box better.
     const boxInnerPadding = Math.max(6, Math.round(textBoxHeight * 0.05));
 
@@ -73,15 +76,12 @@ export async function POST(request: Request) {
     // Ensure transparent background
     textBoxCtx.clearRect(0, 0, width, height);
     
-    // Draw white box with red border
+    // Draw white box (no border per request)
     const boxX = (width - textBoxWidth) / 2;
-    const borderWidth = Math.max(8, Math.round(width / 150));
     // Slight translucency so the artwork shows through a touch (requested).
     // Note: re-claiming the same image multiple times can reveal older overlays underneath;
     // if that becomes an issue again we can bump this up slightly.
     textBoxCtx.fillStyle = 'rgba(255, 255, 255, 0.90)';
-    textBoxCtx.strokeStyle = 'rgb(239, 68, 68)';
-    textBoxCtx.lineWidth = borderWidth;
     
     // Use beginPath and rounded rectangle path (roundRect might not be available)
     textBoxCtx.beginPath();
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
     textBoxCtx.quadraticCurveTo(boxX, padding, boxX + radius, padding);
     textBoxCtx.closePath();
     textBoxCtx.fill();
-    textBoxCtx.stroke();
+    // No stroke (border) on the box
     
     // Draw text - auto-wrap + auto-fit to box
     const textX = width / 2;
@@ -214,8 +214,8 @@ export async function POST(request: Request) {
     claimedCtx.clearRect(0, 0, width, height);
     
     // Draw "Claimed." text at bottom right
-    // No hard outline; use a subtle shadow for contrast.
-    claimedCtx.fillStyle = 'rgb(239, 68, 68)';
+    // Website green, no hard outline; use a subtle shadow for contrast.
+    claimedCtx.fillStyle = 'rgb(123, 137, 76)'; // #7B894C
     claimedCtx.shadowColor = 'rgba(0,0,0,0.35)';
     claimedCtx.shadowBlur = Math.max(6, Math.round(claimedFontSize * 0.12));
     claimedCtx.shadowOffsetX = 0;
