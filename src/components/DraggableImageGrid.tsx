@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import Image from 'next/image';
-import { getStableCloudinaryUrl, stripCloudinaryVersion } from '@/lib/cloudinaryUrl';
+import { stripCloudinaryVersion, withCacheBuster } from '@/lib/cloudinaryUrl';
 
 // Helper function to convert ET ISO string to datetime-local format
 // The datetime-local input will show the ET time directly (user needs to think in ET)
@@ -247,12 +247,16 @@ export default function DraggableImageGrid({
           </div>
           <Image
             key={`${image.url}-${image.rev ?? ''}`}
-            src={getStableCloudinaryUrl(image.url, image.rev)}
+            // Admin: avoid Vercel Image Optimization usage (keep `unoptimized`),
+            // but still force refresh after an overwrite by appending `rev`.
+            // Use the versioned URL here (don’t strip Cloudinary version) to avoid
+            // any potential versionless redirect caching behavior.
+            src={withCacheBuster(image.url, image.rev)}
             alt={image.caption ?? 'image'}
             width={300}
             height={200}
             className="rounded-lg object-cover w-full" 
-            // Admin preview: bypass Next/Image optimizer caching so overwrites show immediately.
+            // Keep admin thumbnails out of Vercel Image Optimization quota.
             unoptimized
           />
           {editingUrl === image.url ? (

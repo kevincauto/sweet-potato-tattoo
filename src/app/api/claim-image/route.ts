@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     
     // Update caption automatically for claimed designs (so admin + live site show the "no longer available" message)
     const claimedCaption =
-      "This flash design is no longer available. If you'd like a similar custom design please email SweetPotatoTattoo@gmail.com";
+      "This design is no longer available. If you'd like a similar custom design please email SweetPotatoTattoo@gmail.com";
     try {
       // Normalize once (matches normalization strategy in /api/upload/:collection PUT)
       let captionKey = imageUrl as string;
