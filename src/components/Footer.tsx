@@ -1,6 +1,12 @@
+'use client';
+
 import Link from "next/link";
+import { useState } from "react";
 
 export default function Footer() {
+  const EMAIL_ADDRESS = 'SweetPotatoTattoo@gmail.com';
+  const [emailCopied, setEmailCopied] = useState(false);
+
   return (
     <footer className="pt-4 pb-8">
       <div className="container mx-auto flex flex-col items-center gap-4">
@@ -50,12 +56,31 @@ export default function Footer() {
           </li>
         </ul>
         <div className="mb-6">
-          <Link
-            href="mailto:sweetpotatotattoo@gmail.com"
-            className="hover:underline text-[#414141]"
+          <button
+            type="button"
+            className={`hover:underline text-[#414141] transition-colors ${
+              emailCopied ? 'text-emerald-700' : ''
+            }`}
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(EMAIL_ADDRESS);
+              } catch {
+                const textarea = document.createElement('textarea');
+                textarea.value = EMAIL_ADDRESS;
+                textarea.style.position = 'fixed';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+              }
+              setEmailCopied(true);
+              window.setTimeout(() => setEmailCopied(false), 1800);
+            }}
+            title="Copy email address"
           >
-            SweetPotatoTattoo@gmail.com
-          </Link>
+            {emailCopied ? 'Email copied!' : EMAIL_ADDRESS}
+          </button>
         </div>
       </div>
     </footer>

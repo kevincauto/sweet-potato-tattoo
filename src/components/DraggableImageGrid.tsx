@@ -408,8 +408,21 @@ export default function DraggableImageGrid({
                   Processing…
                 </button>
               ) : image.claimed === 'true' || image.claimed === true ? (
-                <div className="text-[10px] text-gray-600 text-center py-1">
-                  ✓ Design has been claimed
+                <div className="space-y-1">
+                  <div className="text-[10px] text-gray-600 text-center py-1">
+                    ✓ Design is marked as claimed
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleClaimed(image.url, false);
+                    }}
+                    className="w-full bg-white text-red-700 border border-red-300 px-3 py-2 rounded-lg text-xs hover:bg-red-50 transition-colors"
+                    title="Mark this design as unclaimed (availability). Note: this does not remove any baked-in overlay on the image."
+                  >
+                    Mark as unclaimed
+                  </button>
                 </div>
               ) : (
                 <button

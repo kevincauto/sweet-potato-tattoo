@@ -229,7 +229,8 @@ export async function PUT(request: Request, { params }: any) {
   const { collection } = await params;
   const { searchParams } = new URL(request.url);
   let url = searchParams.get('url');
-  const caption = searchParams.get('caption') || '';
+  // Only update captions when explicitly provided (otherwise unrelated updates would wipe captions).
+  const captionParam = searchParams.get('caption'); // string | null (may be empty string to clear)
   const category = searchParams.get('category');
   const schedule = searchParams.get('schedule'); // ISO string or empty string to clear
   const hidden = searchParams.get('hidden'); // 'true' or 'false' or empty string to clear
@@ -244,9 +245,7 @@ export async function PUT(request: Request, { params }: any) {
   } catch {
     // If decoding fails, use original
   }
-  if (caption !== null) {
-    await kv.hset('captions', { [url]: caption });
-  }
+  if (captionParam !== null) await kv.hset('captions', { [url]: captionParam });
   if (collection === 'flash') {
     if (category) {
       const allowedCategories = ['Fauna Flash', 'Flora Flash', 'Sky Flash', 'Small Flash', 'Discount Flash'];

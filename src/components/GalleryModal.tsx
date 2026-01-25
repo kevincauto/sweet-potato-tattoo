@@ -23,6 +23,7 @@ interface GalleryModalProps {
 
 export default function GalleryModal({ allImages, allCaptions, currentIndex, onClose, ctaVariant = 'none' }: GalleryModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(currentIndex);
+  const [emailCopied, setEmailCopied] = useState(false);
 
   const goToPrevious = useCallback(() => {
     setCurrentImageIndex((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
@@ -52,7 +53,27 @@ export default function GalleryModal({ allImages, allCaptions, currentIndex, onC
   const currentImage = allImages[currentImageIndex];
   const currentCaption = allCaptions[currentImage.url] || '';
   const currentSrc = getStableCloudinaryUrl(currentImage.url, currentImage.rev);
-  const emailHref = 'mailto:SweetPotatoTattoo@gmail.com';
+  const EMAIL_ADDRESS = 'SweetPotatoTattoo@gmail.com';
+
+  const copyEmailToClipboard = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(EMAIL_ADDRESS);
+    } catch {
+      // Fallback for environments where Clipboard API is unavailable.
+      const textarea = document.createElement('textarea');
+      textarea.value = EMAIL_ADDRESS;
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+
+    setEmailCopied(true);
+    window.setTimeout(() => setEmailCopied(false), 1800);
+  };
 
   return (
     <div 
@@ -91,13 +112,15 @@ export default function GalleryModal({ allImages, allCaptions, currentIndex, onC
             </Link>
           )}
           {ctaVariant === 'email' && (
-            <a
-              href={emailHref}
-              className="inline-block bg-[#7B894C] text-white text-center py-2 px-6 rounded-lg hover:bg-[#6A7A3F] transition-colors text-sm font-medium mb-3"
-              onClick={(e) => e.stopPropagation()}
+            <button
+              type="button"
+              className={`inline-block text-white text-center py-2 px-6 rounded-lg transition-colors text-sm font-medium mb-3 ${
+                emailCopied ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-[#7B894C] hover:bg-[#6A7A3F]'
+              }`}
+              onClick={copyEmailToClipboard}
             >
-              Send An Email
-            </a>
+              {emailCopied ? 'Email copied!' : 'Send An Email'}
+            </button>
           )}
           {allImages.length > 1 && (
             <div className="text-xs text-gray-400 pt-1">

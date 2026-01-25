@@ -17,6 +17,7 @@ export default function FlashAdminPage() {
   const [replaceSourceUrl, setReplaceSourceUrl] = useState('');
   const [replaceTargetUrl, setReplaceTargetUrl] = useState('');
   const [replacing, setReplacing] = useState(false);
+  const [showAdvancedTools, setShowAdvancedTools] = useState(false);
 
   const fetchImages = useCallback(async () => {
     setLoading(true);
@@ -142,77 +143,107 @@ export default function FlashAdminPage() {
   }
 
   async function handleToggleClaimed(url: string, claimed: boolean) {
-    // Show confirmation dialog
-    const confirmed = window.confirm(
-      'Are you sure you want to mark this design as claimed?\n\n' +
-      'This will permanently edit the image to add a "Claimed" overlay. ' +
-      'The image will be modified and this action cannot be undone.\n\n' +
-      'The image URL will remain the same, so any emails or links pointing to it will automatically show the updated version.'
-    );
-    
-    if (!confirmed) {
+    const CLAIMED_CAPTION =
+      "This design is no longer available. If you'd like a similar custom design please email SweetPotatoTattoo@gmail.com";
+
+    if (claimed) {
+      // Mark claimed (permanent image overwrite)
+      const confirmed = window.confirm(
+        'Are you sure you want to mark this design as claimed?\n\n' +
+          'This will permanently edit the image to add a "Claimed" overlay. ' +
+          'The image will be modified and this action cannot be undone.\n\n' +
+          'The image URL will remain the same, so any emails or links pointing to it will automatically show the updated version.',
+      );
+
+      if (!confirmed) return;
+
+      // Show loading state
+      setImages((imgs) => imgs.map((it) => (it.url === url ? { ...it, claimed: 'processing' } : it)));
+
+      try {
+        const response = await fetch('/api/claim-image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ imageUrl: url }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          console.error('Failed to claim image:', errorData);
+          await fetchImages();
+          alert('Failed to claim image: ' + (errorData.error || errorData.details || 'Unknown error'));
+          return;
+        }
+
+        const result = await response.json();
+        console.log('Claim image result:', result);
+
+        if (result.error) {
+          console.error('Error in response:', result);
+          await fetchImages();
+          alert('Failed to claim image: ' + (result.error || result.details || 'Unknown error'));
+          return;
+        }
+
+        const nextRev = typeof result.rev === 'string' && result.rev.length > 0 ? result.rev : Date.now().toString();
+
+        setImages((imgs) => imgs.map((it) => (it.url === url ? { ...it, claimed: true, rev: nextRev } : it)));
+        fetchImages();
+
+        alert('Image has been successfully marked as claimed! The image has been updated with the claimed overlay.');
+      } catch (error) {
+        console.error('Error claiming image:', error);
+        await fetchImages();
+        alert('Error claiming image: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      }
+
       return;
     }
-    
-    // Show loading state
-    setImages((imgs) =>
-      imgs.map((it) =>
-        it.url === url ? { ...it, claimed: 'processing' } : it
-      )
+
+    // Mark unclaimed (database only)
+    const confirmed = window.confirm(
+      'Mark this design as UNCLAIMED?\n\n' +
+        'This updates availability in the database and the live site will treat it as available again.\n\n' +
+        'Note: If the image was previously overwritten with a baked-in "Claimed" overlay, this does NOT remove that text from the image. ' +
+        'Use the Replace Image tool above if you need to restore original artwork.',
     );
-    
+    if (!confirmed) return;
+
+    setImages((imgs) => imgs.map((it) => (it.url === url ? { ...it, claimed: 'processing' } : it)));
+
     try {
-      const response = await fetch('/api/claim-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ imageUrl: url }),
+      const current = images.find((it) => it.url === url);
+      const shouldClearCaption = (current?.caption || '') === CLAIMED_CAPTION;
+      const captionPart = shouldClearCaption ? `&caption=` : '';
+
+      const response = await fetch(`/api/upload/flash?url=${encodeURIComponent(url)}&claimed=false${captionPart}`, {
+        method: 'PUT',
       });
-      
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        console.error('Failed to claim image:', errorData);
-        // Revert on error
+        const errorText = await response.text();
+        console.error('Failed to unclaim image:', errorText);
         await fetchImages();
-        alert('Failed to claim image: ' + (errorData.error || errorData.details || 'Unknown error'));
+        alert('Failed to unclaim image. Please try again.');
         return;
       }
-      
-      const result = await response.json();
-      console.log('Claim image result:', result);
-      
-      if (result.error) {
-        console.error('Error in response:', result);
-        await fetchImages();
-        alert('Failed to claim image: ' + (result.error || result.details || 'Unknown error'));
-        return;
-      }
-      
-      // Optimistically update the one item in-place so the admin preview updates immediately
-      const nextRev =
-        typeof result.rev === 'string' && result.rev.length > 0
-          ? result.rev
-          : Date.now().toString();
 
       setImages((imgs) =>
         imgs.map((it) =>
           it.url === url
-            ? { ...it, claimed: true, rev: nextRev }
-            : it
-        )
+            ? { ...it, claimed: false, caption: shouldClearCaption ? '' : it.caption }
+            : it,
+        ),
       );
-
-      // Silent background refresh to reconcile any derived fields (rev backfills, claimed booleans, etc)
-      // without making the UI feel like it "reloads".
       fetchImages();
 
-      alert('Image has been successfully marked as claimed! The image has been updated with the claimed overlay.');
+      alert('Design is now marked as unclaimed (database updated).');
     } catch (error) {
-      console.error('Error claiming image:', error);
-      // Revert on error
+      console.error('Error unclaiming image:', error);
       await fetchImages();
-      alert('Error claiming image: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert('Error unclaiming image: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   }
 
@@ -220,75 +251,92 @@ export default function FlashAdminPage() {
     <main className="container mx-auto p-4">
       <h1 className="text-4xl font-bold text-center my-8">Flash Admin</h1>
 
-      {/* Replace image tool (admin-only) */}
+      {/* Advanced tools (collapsed by default) */}
       <section className="mb-8 p-4 border rounded-lg bg-white">
-        <h2 className="text-xl font-bold mb-2">Replace Image (one-time tool)</h2>
-        <p className="text-sm text-gray-600 mb-3">
-          Paste a <strong>source</strong> image URL and a <strong>target</strong> image URL. This will permanently overwrite the
-          target image in Cloudinary (the URL stays the same).
-        </p>
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            if (!replaceSourceUrl || !replaceTargetUrl) return;
-            const confirmed = window.confirm(
-              'This will PERMANENTLY overwrite the target image in Cloudinary.\n\n' +
-              `Source:\n${replaceSourceUrl}\n\nTarget:\n${replaceTargetUrl}\n\nContinue?`
-            );
-            if (!confirmed) return;
-
-            setReplacing(true);
-            try {
-              const res = await fetch('/api/replace-image', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sourceUrl: replaceSourceUrl, targetUrl: replaceTargetUrl }),
-              });
-
-              const data = await res.json().catch(() => ({}));
-              if (!res.ok || data?.error) {
-                console.error('Replace failed:', data);
-                alert('Replace failed: ' + (data?.error || data?.details || 'Unknown error'));
-                return;
-              }
-
-              alert('Replaced successfully. Refreshing the grid…');
-              await fetchImages();
-            } catch (err) {
-              console.error('Replace error:', err);
-              alert('Replace failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
-            } finally {
-              setReplacing(false);
-            }
-          }}
-          className="grid grid-cols-1 gap-3"
+        <button
+          type="button"
+          onClick={() => setShowAdvancedTools((v) => !v)}
+          className="w-full flex items-center justify-between text-left"
+          aria-expanded={showAdvancedTools}
         >
-          <input
-            type="url"
-            placeholder="Source image URL (the image you want to copy FROM)"
-            value={replaceSourceUrl}
-            onChange={(e) => setReplaceSourceUrl(e.target.value)}
-            className="border rounded-lg p-2 text-sm"
-            required
-          />
-          <input
-            type="url"
-            placeholder="Target image URL (the image you want to overwrite / replace)"
-            value={replaceTargetUrl}
-            onChange={(e) => setReplaceTargetUrl(e.target.value)}
-            className="border rounded-lg p-2 text-sm"
-            required
-          />
-          <button
-            type="submit"
-            disabled={replacing}
-            className={`px-4 py-2 rounded-lg text-white text-sm transition-colors ${
-              replacing ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#7B894C] hover:bg-[#6A7A3F]'
-            }`}
-          >
-            {replacing ? 'Replacing…' : 'Replace target image'}
-          </button>
-        </form>
+          <span className="text-xl font-bold">Advanced Tools</span>
+          <span className="text-sm text-gray-600">{showAdvancedTools ? 'Hide' : 'Show'}</span>
+        </button>
+
+        {showAdvancedTools && (
+          <div className="mt-4">
+            {/* Replace image tool (admin-only) */}
+            <div className="p-4 border rounded-lg bg-gray-50">
+              <h2 className="text-lg font-bold mb-2">Replace Image (one-time tool)</h2>
+              <p className="text-sm text-gray-600 mb-3">
+                Paste a <strong>source</strong> image URL and a <strong>target</strong> image URL. This will permanently overwrite the
+                target image in Cloudinary (the URL stays the same).
+              </p>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!replaceSourceUrl || !replaceTargetUrl) return;
+                  const confirmed = window.confirm(
+                    'This will PERMANENTLY overwrite the target image in Cloudinary.\n\n' +
+                      `Source:\n${replaceSourceUrl}\n\nTarget:\n${replaceTargetUrl}\n\nContinue?`,
+                  );
+                  if (!confirmed) return;
+
+                  setReplacing(true);
+                  try {
+                    const res = await fetch('/api/replace-image', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ sourceUrl: replaceSourceUrl, targetUrl: replaceTargetUrl }),
+                    });
+
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok || data?.error) {
+                      console.error('Replace failed:', data);
+                      alert('Replace failed: ' + (data?.error || data?.details || 'Unknown error'));
+                      return;
+                    }
+
+                    alert('Replaced successfully. Refreshing the grid…');
+                    await fetchImages();
+                  } catch (err) {
+                    console.error('Replace error:', err);
+                    alert('Replace failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
+                  } finally {
+                    setReplacing(false);
+                  }
+                }}
+                className="grid grid-cols-1 gap-3"
+              >
+                <input
+                  type="url"
+                  placeholder="Source image URL (the image you want to copy FROM)"
+                  value={replaceSourceUrl}
+                  onChange={(e) => setReplaceSourceUrl(e.target.value)}
+                  className="border rounded-lg p-2 text-sm"
+                  required
+                />
+                <input
+                  type="url"
+                  placeholder="Target image URL (the image you want to overwrite / replace)"
+                  value={replaceTargetUrl}
+                  onChange={(e) => setReplaceTargetUrl(e.target.value)}
+                  className="border rounded-lg p-2 text-sm"
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={replacing}
+                  className={`px-4 py-2 rounded-lg text-white text-sm transition-colors ${
+                    replacing ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#7B894C] hover:bg-[#6A7A3F]'
+                  }`}
+                >
+                  {replacing ? 'Replacing…' : 'Replace target image'}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
       </section>
       
       {/* Navigation */}

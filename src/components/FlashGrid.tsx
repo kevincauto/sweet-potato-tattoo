@@ -90,16 +90,16 @@ export default function FlashGrid({ images, captionsMap, categoriesMap = {}, all
       <div className="space-y-6">
         {(() => {
           const chunks: Array<{ type: 'images' | 'banner'; items: typeof viewItems }> = [];
-          const chunkSize = 24;
+          const chunkSize = 28;
           
           // Split viewItems into chunks of 24
           for (let i = 0; i < viewItems.length; i += chunkSize) {
             const chunk = viewItems.slice(i, i + chunkSize);
             chunks.push({ type: 'images', items: chunk });
             
-            // Add banner after each chunk only if there are at least 24 more images after it
+            // Add banner after each chunk only if there are at least `chunkSize` more images after it
             const remainingImages = viewItems.length - (i + chunkSize);
-            if (remainingImages >= 24) {
+            if (remainingImages >= chunkSize) {
               chunks.push({ type: 'banner', items: [] });
             }
           }
