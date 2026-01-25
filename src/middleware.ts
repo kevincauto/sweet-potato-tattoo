@@ -6,7 +6,13 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/', req.url), 308);
   }
 
-  if (req.nextUrl.pathname.startsWith('/admin') || req.nextUrl.pathname.startsWith('/api/upload')) {
+  const isAdminRoute =
+    req.nextUrl.pathname.startsWith('/admin') ||
+    req.nextUrl.pathname.startsWith('/api/upload') ||
+    req.nextUrl.pathname.startsWith('/api/claim-image') ||
+    req.nextUrl.pathname.startsWith('/api/replace-image');
+
+  if (isAdminRoute) {
     const basicAuth = req.headers.get('authorization');
     const url = req.nextUrl;
 

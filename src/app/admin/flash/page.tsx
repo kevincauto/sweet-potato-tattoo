@@ -14,6 +14,9 @@ export default function FlashAdminPage() {
   const [loading, setLoading] = useState(true);
   const [editingUrl, setEditingUrl] = useState<string | null>(null);
   const [tempCaption, setTempCaption] = useState('');
+  const [replaceSourceUrl, setReplaceSourceUrl] = useState('');
+  const [replaceTargetUrl, setReplaceTargetUrl] = useState('');
+  const [replacing, setReplacing] = useState(false);
 
   const fetchImages = useCallback(async () => {
     setLoading(true);
@@ -216,6 +219,77 @@ export default function FlashAdminPage() {
   return (
     <main className="container mx-auto p-4">
       <h1 className="text-4xl font-bold text-center my-8">Flash Admin</h1>
+
+      {/* Replace image tool (admin-only) */}
+      <section className="mb-8 p-4 border rounded-lg bg-white">
+        <h2 className="text-xl font-bold mb-2">Replace Image (one-time tool)</h2>
+        <p className="text-sm text-gray-600 mb-3">
+          Paste a <strong>source</strong> image URL and a <strong>target</strong> image URL. This will permanently overwrite the
+          target image in Cloudinary (the URL stays the same).
+        </p>
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (!replaceSourceUrl || !replaceTargetUrl) return;
+            const confirmed = window.confirm(
+              'This will PERMANENTLY overwrite the target image in Cloudinary.\n\n' +
+              `Source:\n${replaceSourceUrl}\n\nTarget:\n${replaceTargetUrl}\n\nContinue?`
+            );
+            if (!confirmed) return;
+
+            setReplacing(true);
+            try {
+              const res = await fetch('/api/replace-image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sourceUrl: replaceSourceUrl, targetUrl: replaceTargetUrl }),
+              });
+
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok || data?.error) {
+                console.error('Replace failed:', data);
+                alert('Replace failed: ' + (data?.error || data?.details || 'Unknown error'));
+                return;
+              }
+
+              alert('Replaced successfully. Refreshing the grid…');
+              await fetchImages();
+            } catch (err) {
+              console.error('Replace error:', err);
+              alert('Replace failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
+            } finally {
+              setReplacing(false);
+            }
+          }}
+          className="grid grid-cols-1 gap-3"
+        >
+          <input
+            type="url"
+            placeholder="Source image URL (the image you want to copy FROM)"
+            value={replaceSourceUrl}
+            onChange={(e) => setReplaceSourceUrl(e.target.value)}
+            className="border rounded-lg p-2 text-sm"
+            required
+          />
+          <input
+            type="url"
+            placeholder="Target image URL (the image you want to overwrite / replace)"
+            value={replaceTargetUrl}
+            onChange={(e) => setReplaceTargetUrl(e.target.value)}
+            className="border rounded-lg p-2 text-sm"
+            required
+          />
+          <button
+            type="submit"
+            disabled={replacing}
+            className={`px-4 py-2 rounded-lg text-white text-sm transition-colors ${
+              replacing ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#7B894C] hover:bg-[#6A7A3F]'
+            }`}
+          >
+            {replacing ? 'Replacing…' : 'Replace target image'}
+          </button>
+        </form>
+      </section>
       
       {/* Navigation */}
       <div className="flex justify-center gap-4 mb-6">
