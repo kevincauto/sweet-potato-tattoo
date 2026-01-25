@@ -27,10 +27,18 @@ export async function POST(request: Request) {
     const afterUpload = urlParts.slice(uploadIndex + 1);
     const publicIdParts = afterUpload.filter((part: string) => !part.match(/^v\d+$/));
     const publicIdWithExt = publicIdParts.join('/').split('?')[0];
-    const publicId = publicIdWithExt.replace(/\.[^/.]+$/, '');
+    const publicIdRaw = publicIdWithExt.replace(/\.[^/.]+$/, '');
+    // IMPORTANT: Cloudinary delivery URLs URL-encode the public_id (e.g. spaces become %20),
+    // but the Upload API expects the *decoded* public_id. If we don't decode, we can end up
+    // overwriting a different asset (works for filenames without spaces, fails for ones with).
+    let publicId = publicIdRaw;
+    try {
+      publicId = decodeURIComponent(publicIdRaw);
+    } catch {}
     const originalExt = (publicIdWithExt.match(/\.([a-zA-Z0-9]+)$/)?.[1] || 'jpg').toLowerCase();
 
-    console.log('Extracted public_id:', publicId);
+    console.log('Extracted public_id (raw):', publicIdRaw);
+    console.log('Extracted public_id (decoded):', publicId);
     console.log('Original ext:', originalExt);
 
     // PRODUCTION-SAFE PATH:
@@ -94,19 +102,56 @@ export async function POST(request: Request) {
       // Non-fatal; image claim should still succeed
     }
 
-    // Mark as claimed in KV
-    await kv.hset('flash-claimed', { [imageUrl]: 'true' });
+    // Mark as claimed in KV.
+    // Store a few URL variations because encoding mismatches (especially spaces) have historically
+    // caused "claimed" lookups to miss in parts of the app.
+    const claimedUpdates: Record<string, string> = { [imageUrl]: 'true' };
+    try {
+      const decoded = decodeURIComponent(imageUrl);
+      claimedUpdates[decoded] = 'true';
+      try {
+        claimedUpdates[encodeURI(decoded)] = 'true';
+      } catch {}
+    } catch {}
+    try {
+      claimedUpdates[imageUrl.replace(/%20/g, '%2520')] = 'true';
+    } catch {}
+    try {
+      const inputNoQuery = String(imageUrl).split('?')[0];
+      claimedUpdates[stripCloudinaryVersion(inputNoQuery)] = 'true';
+    } catch {}
+    await kv.hset('flash-claimed', claimedUpdates);
 
     // IMPORTANT: Next/Image caches by `src` on the server. Cloudinary overwrite keeps the same public_id,
     // so we store a "rev" and append it as a query param to force immediate refresh across the site.
-    const stableUrl = stripCloudinaryVersion(uploadResult.secure_url);
+    // Use both the input URL and the returned URL as sources of truth for the stable key.
+    // This guards against subtle encoding differences (e.g. spaces) that can otherwise prevent
+    // cache-busting from taking effect on the live site.
+    const inputNoQuery = String(imageUrl).split('?')[0];
+    const stableUrlFromInput = stripCloudinaryVersion(inputNoQuery);
+    const stableUrlFromResult = stripCloudinaryVersion(uploadResult.secure_url);
     const rev = Date.now().toString();
-    await kv.hset('flash-image-rev', { [stableUrl]: rev });
+    const revUpdates: Record<string, string> = {
+      [stableUrlFromInput]: rev,
+      [stableUrlFromResult]: rev,
+    };
+    // Also write common encoding variants to be resilient to older stored URLs.
+    try {
+      revUpdates[decodeURIComponent(stableUrlFromInput)] = rev;
+    } catch {}
+    try {
+      revUpdates[encodeURI(stableUrlFromInput)] = rev;
+    } catch {}
+    try {
+      revUpdates[stableUrlFromInput.replace(/%20/g, '%2520')] = rev;
+    } catch {}
+    await kv.hset('flash-image-rev', revUpdates);
     
     return NextResponse.json({ 
       success: true,
       url: uploadResult.secure_url,
-      stableUrl,
+      stableUrl: stableUrlFromResult,
+      stableUrlFromInput,
       rev,
       caption: claimedCaption,
       message: 'Image has been marked as claimed and updated'
