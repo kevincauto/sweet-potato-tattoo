@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { cloudinaryLoader, getStableCloudinaryUrl } from '@/lib/cloudinaryUrl';
+import { getStableCloudinaryUrl } from '@/lib/cloudinaryUrl';
 
 interface BlobData {
   url: string;
@@ -68,7 +68,6 @@ export default function GalleryModal({ allImages, allCaptions, currentIndex, onC
         <div className="relative flex-1 w-full">
           <Image
             src={currentSrc}
-            loader={cloudinaryLoader}
             alt={currentCaption || `Gallery image ${currentImageIndex + 1}`}
             fill
             className="object-contain"
