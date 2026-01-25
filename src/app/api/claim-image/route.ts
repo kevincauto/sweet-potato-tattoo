@@ -79,6 +79,21 @@ export async function POST(request: Request) {
     console.log('Upload successful, new URL:', uploadResult?.secure_url);
     console.log('Upload result public_id:', uploadResult?.public_id);
     
+    // Update caption automatically for claimed designs (so admin + live site show the "no longer available" message)
+    const claimedCaption =
+      "This flash design is no longer available. If you'd like a similar custom design please email SweetPotatoTattoo@gmail.com";
+    try {
+      // Normalize once (matches normalization strategy in /api/upload/:collection PUT)
+      let captionKey = imageUrl as string;
+      try {
+        captionKey = decodeURIComponent(captionKey);
+      } catch {}
+      await kv.hset('captions', { [captionKey]: claimedCaption });
+    } catch (e) {
+      console.error('Failed to set claimed caption in KV:', e);
+      // Non-fatal; image claim should still succeed
+    }
+
     // Mark as claimed in KV
     await kv.hset('flash-claimed', { [imageUrl]: 'true' });
 
@@ -93,6 +108,7 @@ export async function POST(request: Request) {
       url: uploadResult.secure_url,
       stableUrl,
       rev,
+      caption: claimedCaption,
       message: 'Image has been marked as claimed and updated'
     });
     
