@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { stripCloudinaryVersion } from "@/lib/cloudinaryUrl";
+import { cloudinaryLoader, stripCloudinaryVersion } from "@/lib/cloudinaryUrl";
 
 type FlashCTAProps = {
   imageUrls: string[];
@@ -49,6 +49,7 @@ export default function FlashCTA({ imageUrls, variant = 'to-flash', useStaticBac
                   <div key={`${url}-${i}`} className="relative h-full w-[45vw] sm:w-[35vw] md:w-[28vw] lg:w-[22vw] flex-shrink-0">
                     <Image
                       src={url}
+                      loader={cloudinaryLoader}
                       alt="Flash background"
                       fill
                       sizes="(max-width: 640px) 45vw, (max-width: 768px) 35vw, (max-width: 1024px) 28vw, 22vw"

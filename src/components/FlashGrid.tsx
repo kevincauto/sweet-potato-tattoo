@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import GalleryModal from '@/components/GalleryModal';
 import FlashCTA from '@/components/FlashCTA';
-import { getStableCloudinaryUrl } from '@/lib/cloudinaryUrl';
+import { cloudinaryLoader, getStableCloudinaryUrl } from '@/lib/cloudinaryUrl';
 
 interface BlobData {
   url: string;
@@ -147,6 +147,7 @@ export default function FlashGrid({ images, captionsMap, categoriesMap = {}, all
                     >
                       <Image
                         src={getStableCloudinaryUrl(blob.url, blob.rev)}
+                        loader={cloudinaryLoader}
                         alt={`Flash image ${index + 1}`}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
