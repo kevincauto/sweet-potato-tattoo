@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 import { stripCloudinaryVersion } from '@/lib/cloudinaryUrl';
 import cloudinary from '@/lib/cloudinary';
 import { kv } from '@vercel/kv';
+import { revalidatePath } from 'next/cache';
 
 export async function POST(request: Request) {
   try {
@@ -146,6 +147,11 @@ export async function POST(request: Request) {
       revUpdates[stableUrlFromInput.replace(/%20/g, '%2520')] = rev;
     } catch {}
     await kv.hset('flash-image-rev', revUpdates);
+
+    // Bust the cached homepage so the updated/claimed image appears quickly even with ISR enabled.
+    try {
+      revalidatePath('/');
+    } catch {}
     
     return NextResponse.json({ 
       success: true,

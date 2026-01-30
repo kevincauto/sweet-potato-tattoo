@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 import { kv } from '@vercel/kv';
 import cloudinary from '@/lib/cloudinary';
 import { stripCloudinaryVersion } from '@/lib/cloudinaryUrl';
+import { revalidatePath } from 'next/cache';
 
 // ───────────────────────── POST /api/upload/:collection
 export async function POST(request: Request, { params }: any) {
@@ -68,6 +69,11 @@ export async function POST(request: Request, { params }: any) {
       await kv.hset('flash-categories', { [imageUrl]: category });
     }
   }
+
+  // Bust cached pages after mutations so the site updates quickly with ISR enabled.
+  try {
+    revalidatePath(collection === 'flash' ? '/' : '/gallery');
+  } catch {}
   
   return NextResponse.json({ 
     url: imageUrl,
@@ -372,6 +378,10 @@ export async function PUT(request: Request, { params }: any) {
       }
     }
   }
+  // Bust cached pages after mutations so the site updates quickly with ISR enabled.
+  try {
+    revalidatePath(collection === 'flash' ? '/' : '/gallery');
+  } catch {}
   return NextResponse.json({ ok: true });
 }
 
@@ -398,6 +408,9 @@ export async function PATCH(request: Request, { params }: any) {
       if (existing.length > 0) {
         await kv.rpush(`${collection}-images`, ...existing);
       }
+      try {
+        revalidatePath(collection === 'flash' ? '/' : '/gallery');
+      } catch {}
       return NextResponse.json({ ok: true, message: 'Shuffled once' });
     }
 
@@ -411,6 +424,9 @@ export async function PATCH(request: Request, { params }: any) {
       await kv.rpush(`${collection}-images`, ...urls);
     }
 
+    try {
+      revalidatePath(collection === 'flash' ? '/' : '/gallery');
+    } catch {}
     return NextResponse.json({ ok: true, message: 'Order updated successfully' });
   } catch (error) {
     console.error('Error updating order:', error);
@@ -456,5 +472,9 @@ export async function DELETE(request: Request, { params }: any) {
     await kv.hdel('flash-schedules', url);
     await kv.hdel('flash-hidden', url);
   }
+
+  try {
+    revalidatePath(collection === 'flash' ? '/' : '/gallery');
+  } catch {}
   return NextResponse.json({ message: 'File deleted.' });
 } 

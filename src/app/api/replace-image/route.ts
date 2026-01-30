@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server';
 import cloudinary from '@/lib/cloudinary';
 import { kv } from '@vercel/kv';
 import { stripCloudinaryVersion } from '@/lib/cloudinaryUrl';
+import { revalidatePath } from 'next/cache';
 
 function extractCloudinaryPublicIdFromUrl(imageUrl: string): { publicId: string; originalExt: string } {
   // URL format (common): https://res.cloudinary.com/{cloud_name}/image/upload/v{version}/{folder}/{public_id}.{ext}
@@ -78,6 +79,11 @@ export async function POST(request: Request) {
       revUpdates[stableFromInput.replace(/%20/g, '%2520')] = rev;
     } catch {}
     await kv.hset('flash-image-rev', revUpdates);
+
+    // Bust the cached homepage so the replaced image appears quickly even with ISR enabled.
+    try {
+      revalidatePath('/');
+    } catch {}
 
     return NextResponse.json({
       success: true,

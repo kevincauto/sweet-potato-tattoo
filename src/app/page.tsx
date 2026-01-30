@@ -4,21 +4,18 @@ import FlashGrid from '@/components/FlashGrid';
 import FlashCTA from '@/components/FlashCTA';
 import { stripCloudinaryVersion } from '@/lib/cloudinaryUrl';
 
-// Ensure fresh data on every request in production
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-export const fetchCache = 'force-no-store';
+// Cache this page for a short window to drastically reduce KV command usage.
+// Admin mutations explicitly call `revalidatePath('/')` so updates show up quickly.
+export const revalidate = 300; // 5 minutes
 
 export default async function Home() {
   // Get flash images in the correct order
   let imageUrls = await kv.lrange('flash-images', 0, -1);
 
-  // Fallback: if flash is empty, pull from any previous designs key and migrate back to flash
+  // Fallback: if flash is empty, pull from any previous designs key (read-only; no migration here)
   if (imageUrls.length === 0) {
     const designsUrls = await kv.lrange('designs-images', 0, -1);
     if (designsUrls.length > 0) {
-      await kv.del('flash-images');
-      await kv.rpush('flash-images', ...designsUrls);
       imageUrls = designsUrls;
     }
   }
@@ -88,11 +85,9 @@ export default async function Home() {
   const claimedRaw = (await kv.hgetall('flash-claimed')) as Record<string, string | boolean> | null;
   const claimedMap = claimedRaw ?? {};
 
-  // Self-heal: older claimed images may not yet have a `rev` entry (added later).
-  // Without a rev, Next/Image can serve a stale cached version forever (even in incognito),
-  // so if an image is claimed and missing a rev, generate one and persist it.
+  // NOTE: We intentionally avoid "self-heal" KV writes during page renders to keep command usage low.
+  // The claim/replace flows set revs explicitly, and admin can refresh/reclaim if an older asset needs it.
   const isClaimedValue = (v: unknown) => v === true || v === 'true';
-  const pendingRevUpdates: Record<string, string> = {};
 
   existingBlobs.forEach((blob) => {
     const url = blob.url;
@@ -115,17 +110,9 @@ export default async function Home() {
 
     const isClaimed = Array.from(variants).some((k) => isClaimedValue(claimedMap[k]));
 
-    if (isClaimed && (!blob.rev || blob.rev.length === 0)) {
-      const rev = Date.now().toString();
-      blob.rev = rev;
-      pendingRevUpdates[stableUrl] = rev;
-    }
+    // If claimed but missing rev, we still render without rev. (Worst case: a stale cached image until next overwrite.)
   });
 
-  if (Object.keys(pendingRevUpdates).length > 0) {
-    await kv.hset('flash-image-rev', pendingRevUpdates);
-  }
-  
   // Create a comprehensive hidden map that handles all URL encoding variations
   // This ensures we can match URLs regardless of encoding differences
   const comprehensiveHiddenMap: Record<string, boolean> = {};
