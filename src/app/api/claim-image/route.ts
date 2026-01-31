@@ -6,6 +6,7 @@ import { stripCloudinaryVersion } from '@/lib/cloudinaryUrl';
 import cloudinary from '@/lib/cloudinary';
 import { kv } from '@vercel/kv';
 import { revalidatePath } from 'next/cache';
+import sharp from 'sharp';
 
 export async function POST(request: Request) {
   try {
@@ -42,48 +43,85 @@ export async function POST(request: Request) {
     console.log('Extracted public_id (decoded):', publicId);
     console.log('Original ext:', originalExt);
 
-    // PRODUCTION-SAFE PATH:
-    // On Vercel/production, serverless runtimes may not have usable system fonts for node-canvas,
-    // which causes "tofu" (square boxes) instead of text. We avoid that by letting Cloudinary
-    // render the text overlays, then we overwrite the original public_id with the transformed bytes.
-    // Build a Cloudinary transformation that:
-    // - stamps ONLY "Claimed" in the center (site green, slightly larger, 95% opacity)
-    // This avoids production font issues from server-side rendering and matches the desired simplified style.
-    // Use Cloudinary's canonical string-based syntax for maximum compatibility:
-    // 1) create a text layer (l_text)
-    // 2) apply it with positioning/sizing and fl_layer_apply
-    // Use structured transformation objects for the Upload API.
-    // (Some Cloudinary accounts reject raw string transforms like `l_text:...` on upload.)
-    const transformation: any[] = [
-      {
-        overlay: {
-          font_family: 'Arial',
-          font_size: 280,
-          font_weight: 'bold',
-          text: 'Claimed',
-        },
-        color: 'rgb:7B894C',
-        opacity: 85,
-      },
-      {
-        flags: ['layer_apply', 'relative'],
-        gravity: 'center',
-        crop: 'fit',
-        width: 0.9,
-      },
-    ];
+    // TEMP EXPERIMENT:
+    // Replace the "Claimed" text overlay with a large diagonal green band.
+    // This is generated with sharp (no fonts required) and then uploaded to Cloudinary as an overwrite.
+    //
+    // (Keeping the previous Cloudinary text transform commented below for easy rollback.)
+    //
+    // const transformation: any[] = [
+    //   {
+    //     overlay: {
+    //       font_family: 'Arial',
+    //       font_size: 280,
+    //       font_weight: 'bold',
+    //       text: 'Claimed',
+    //     },
+    //     color: 'rgb:7B894C',
+    //     opacity: 85,
+    //   },
+    //   {
+    //     flags: ['layer_apply', 'relative'],
+    //     gravity: 'center',
+    //     crop: 'fit',
+    //     width: 0.9,
+    //   },
+    // ];
 
-    // Apply the transformation via the authenticated Upload API and overwrite the existing asset.
-    // This avoids relying on unsigned "delivery URL" transformations which can be blocked by
-    // account settings (e.g. strict transformations).
-    console.log('Uploading to Cloudinary with overwrite + incoming transformation...');
-    const uploadResult = await cloudinary.uploader.upload(imageUrl, {
-      public_id: publicId,
-      resource_type: 'image',
-      overwrite: true,
-      invalidate: true,
-      transformation,
-      format: originalExt === 'jpeg' ? 'jpg' : originalExt,
+    console.log('Fetching original image bytes for diagonal overlay...');
+    const res = await fetch(imageUrl, { cache: 'no-store' });
+    if (!res.ok) {
+      return NextResponse.json({ error: `Failed to fetch source image (${res.status})` }, { status: 502 });
+    }
+    const inputBuf = Buffer.from(await res.arrayBuffer());
+
+    const img = sharp(inputBuf, { failOn: 'none' });
+    const meta = await img.metadata();
+    const w = meta.width ?? 0;
+    const h = meta.height ?? 0;
+    if (!w || !h) {
+      return NextResponse.json({ error: 'Failed to read image dimensions' }, { status: 500 });
+    }
+
+    // Band thickness: ~5.5% of the smaller dimension (half of the previous ~11%).
+    const thickness = Math.max(20, Math.round(Math.min(w, h) * 0.055));
+    const fill = 'rgba(123,137,76,0.75)'; // site green at 75% opacity
+
+    // Draw a huge horizontal rectangle and rotate around center to form a diagonal band.
+    // Make it extra wide to cover corners after rotation.
+    const rectW = Math.round(Math.sqrt(w * w + h * h) * 1.6);
+    const rectX = Math.round((w - rectW) / 2);
+    const rectY = Math.round((h - thickness) / 2);
+
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
+        <g transform="rotate(-35 ${w / 2} ${h / 2})">
+          <rect x="${rectX}" y="${rectY}" width="${rectW}" height="${thickness}" fill="${fill}" />
+        </g>
+      </svg>
+    `.trim();
+
+    const outBuf = await img
+      .composite([{ input: Buffer.from(svg), blend: 'over' }])
+      .toFormat(originalExt === 'jpeg' ? 'jpg' : originalExt as any)
+      .toBuffer();
+
+    console.log('Uploading diagonal overlay bytes to Cloudinary with overwrite...');
+    const uploadResult = await new Promise<any>((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          public_id: publicId,
+          resource_type: 'image',
+          overwrite: true,
+          invalidate: true,
+          format: originalExt === 'jpeg' ? 'jpg' : originalExt,
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        },
+      );
+      stream.end(outBuf);
     });
     console.log('Upload successful, new URL:', uploadResult?.secure_url);
     console.log('Upload result public_id:', uploadResult?.public_id);

@@ -419,7 +419,7 @@ export default function DraggableImageGrid({
                       onToggleClaimed(image.url, false);
                     }}
                     className="w-full bg-white text-red-700 border border-red-300 px-3 py-2 rounded-lg text-xs hover:bg-red-50 transition-colors"
-                    title="Mark this design as unclaimed (availability). Note: this does not remove any baked-in overlay on the image."
+                    title="Mark this design as unclaimed (availability). Note: this does not remove the diagonal stripe overlay from the image."
                   >
                     Mark as unclaimed
                   </button>
@@ -432,7 +432,7 @@ export default function DraggableImageGrid({
                     onToggleClaimed(image.url, true);
                   }}
                   className="w-full bg-[#7B894C] text-white px-3 py-2 rounded-lg text-xs hover:bg-[#6A7A3F] transition-colors"
-                  title="Mark this design as claimed. This will permanently edit the image and cannot be undone."
+                  title="Mark this design as claimed. This will permanently edit the image by adding a diagonal stripe overlay and cannot be undone."
                 >
                   Mark design as claimed
                 </button>

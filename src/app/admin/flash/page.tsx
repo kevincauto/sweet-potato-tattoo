@@ -150,7 +150,7 @@ export default function FlashAdminPage() {
       // Mark claimed (permanent image overwrite)
       const confirmed = window.confirm(
         'Are you sure you want to mark this design as claimed?\n\n' +
-          'This will permanently edit the image to add a "Claimed" overlay. ' +
+          'This will permanently edit the image to add a diagonal green stripe overlay. ' +
           'The image will be modified and this action cannot be undone.\n\n' +
           'The image URL will remain the same, so any emails or links pointing to it will automatically show the updated version.',
       );
@@ -192,7 +192,7 @@ export default function FlashAdminPage() {
         setImages((imgs) => imgs.map((it) => (it.url === url ? { ...it, claimed: true, rev: nextRev } : it)));
         fetchImages();
 
-        alert('Image has been successfully marked as claimed! The image has been updated with the claimed overlay.');
+        alert('Image has been successfully marked as claimed! The image has been updated with the diagonal stripe overlay.');
       } catch (error) {
         console.error('Error claiming image:', error);
         await fetchImages();
@@ -206,7 +206,7 @@ export default function FlashAdminPage() {
     const confirmed = window.confirm(
       'Mark this design as UNCLAIMED?\n\n' +
         'This updates availability in the database and the live site will treat it as available again.\n\n' +
-        'Note: If the image was previously overwritten with a baked-in "Claimed" overlay, this does NOT remove that text from the image. ' +
+        'Note: If the image was previously overwritten with the diagonal stripe overlay, this does NOT remove that overlay from the image. ' +
         'Use the Replace Image tool above if you need to restore original artwork.',
     );
     if (!confirmed) return;
