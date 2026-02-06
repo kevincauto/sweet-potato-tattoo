@@ -152,8 +152,8 @@ export default function FlashGrid({ images, captionsMap, categoriesMap = {}, all
                         sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                         className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-50"
                       />
-                      {/* No CSS overlay needed - claimed images have overlay baked into the image */}
-                      {captionsMap[blob.url] && !isClaimed && (
+                      {/* Show captions on hover (including for claimed images). */}
+                      {captionsMap[blob.url] && (
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">
                           <p className="text-white text-sm text-center leading-relaxed drop-shadow-lg whitespace-pre-line">
                             {captionsMap[blob.url]}
