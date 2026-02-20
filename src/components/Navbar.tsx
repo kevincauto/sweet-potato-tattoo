@@ -22,6 +22,7 @@ export default function Navbar() {
           </h1>
           <div className="w-16 h-px bg-[#7B894C] mx-auto mb-2"></div>
           <p className="text-lg text-[#414141]">Handpoked Tattoos by Josey</p>
+          <p className="text-lg text-[#414141]">in Philadelphia, PA</p>
         </div>
         
         {/* Navigation */}
