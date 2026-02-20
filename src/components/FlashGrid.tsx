@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import GalleryModal from '@/components/GalleryModal';
-import FlashCTA from '@/components/FlashCTA';
 import { getStableCloudinaryUrl } from '@/lib/cloudinaryUrl';
 
 interface BlobData {
@@ -87,41 +86,8 @@ export default function FlashGrid({ images, captionsMap, categoriesMap = {}, all
         </div>
       </div>
 
-      <div className="space-y-6">
-        {(() => {
-          const chunks: Array<{ type: 'images' | 'banner'; items: typeof viewItems }> = [];
-          const chunkSize = 28;
-          
-          // Split viewItems into chunks of 24
-          for (let i = 0; i < viewItems.length; i += chunkSize) {
-            const chunk = viewItems.slice(i, i + chunkSize);
-            chunks.push({ type: 'images', items: chunk });
-            
-            // Add banner after each chunk only if there are at least `chunkSize` more images after it
-            const remainingImages = viewItems.length - (i + chunkSize);
-            if (remainingImages >= chunkSize) {
-              chunks.push({ type: 'banner', items: [] });
-            }
-          }
-          
-          return chunks.map((chunk, chunkIndex) => {
-            if (chunk.type === 'banner') {
-              return (
-                <FlashCTA 
-                  key={`banner-${chunkIndex}`} 
-                  imageUrls={allImageUrls} 
-                  variant="to-booking"
-                  useStaticBackground={true}
-                />
-              );
-            }
-            
-            return (
-              <div 
-                key={`images-${chunkIndex}`}
-                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
-              >
-                {chunk.items.map(({ blob, index }) => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        {viewItems.map(({ blob, index }) => {
                   // Check if image is claimed (handle both boolean true and string 'true')
                   // Also check URL encoding variations
                   const urlVariations = new Set<string>([blob.url]);
@@ -162,11 +128,7 @@ export default function FlashGrid({ images, captionsMap, categoriesMap = {}, all
                       )}
                     </div>
                   );
-                })}
-              </div>
-            );
-          });
-        })()}
+        })}
       </div>
 
       {/* Modal */}
