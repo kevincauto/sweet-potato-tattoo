@@ -25,6 +25,8 @@ export default function BookingAdminPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const fetchBookingData = useCallback(async () => {
     setLoading(true);
@@ -32,7 +34,11 @@ export default function BookingAdminPage() {
       const response = await fetch('/api/booking');
       if (response.ok) {
         const data = await response.json();
-        setBookingData(data);
+        // Normalize to a stable, explicit order for drag-and-drop rendering.
+        const sortedSections = Array.isArray(data.sections)
+          ? [...data.sections].sort((a: BookingSection, b: BookingSection) => a.order - b.order)
+          : [];
+        setBookingData({ ...data, sections: sortedSections });
         setIntroText(data.introText || '');
       } else {
         console.error('Failed to fetch booking data');
@@ -172,6 +178,59 @@ export default function BookingAdminPage() {
       console.error('Error adding section:', error);
       alert('Error adding section');
     }
+  };
+
+  const persistSectionOrder = async (sections: BookingSection[]) => {
+    try {
+      const response = await fetch('/api/booking', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sections }),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Failed to persist booking order:', errorText);
+        alert('Failed to save section order. Please refresh and try again.');
+        // Re-sync from server in case local state diverged.
+        fetchBookingData();
+      }
+    } catch (error) {
+      console.error('Error persisting booking order:', error);
+      alert('Error saving section order. Please refresh and try again.');
+      fetchBookingData();
+    }
+  };
+
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (dragOverIndex !== index) setDragOverIndex(index);
+  };
+
+  const handleDrop = async (index: number) => {
+    if (!bookingData || draggedIndex === null || draggedIndex === index) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const next = [...bookingData.sections];
+    const [moved] = next.splice(draggedIndex, 1);
+    next.splice(index, 0, moved);
+    const normalized = next.map((section, i) => ({ ...section, order: i }));
+
+    setBookingData({ ...bookingData, sections: normalized });
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+    await persistSectionOrder(normalized);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
 
@@ -331,12 +390,27 @@ export default function BookingAdminPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {bookingData.sections
-            .sort((a, b) => a.order - b.order)
-            .map((section, index) => (
-              <div key={section.id} className="bg-white rounded-lg shadow-sm border p-6">
+          {bookingData.sections.map((section, index) => (
+              <div
+                key={section.id}
+                className={`bg-white rounded-lg shadow-sm border p-6 ${
+                  dragOverIndex === index ? 'border-2 border-[#7B894C] border-dashed' : ''
+                } ${draggedIndex === index ? 'opacity-50' : ''}`}
+                draggable={editingSectionId !== section.id}
+                onDragStart={() => handleDragStart(index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDrop={() => handleDrop(index)}
+                onDragEnd={handleDragEnd}
+              >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-4">
+                    <span
+                      className="text-gray-400 select-none cursor-move"
+                      title="Drag to reorder"
+                      aria-hidden="true"
+                    >
+                      ☰
+                    </span>
                     <span className="text-sm text-gray-500">#{index + 1}</span>
                     <h3 className="text-xl font-semibold">{section.title}</h3>
                   </div>
