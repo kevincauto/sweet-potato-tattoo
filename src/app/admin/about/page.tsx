@@ -8,6 +8,10 @@ interface AboutPageData {
   content: string;
 }
 
+interface AboutImageItem {
+  url: string;
+}
+
 export default function AboutAdminPage() {
   const [aboutData, setAboutData] = useState<AboutPageData | null>(null);
   const [title, setTitle] = useState('');
@@ -17,6 +21,8 @@ export default function AboutAdminPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [imageAlt, setImageAlt] = useState('');
+  const [aboutImages, setAboutImages] = useState<AboutImageItem[]>([]);
+  const [loadingImages, setLoadingImages] = useState(false);
 
   const fetchAboutData = useCallback(async () => {
     setLoading(true);
@@ -41,6 +47,28 @@ export default function AboutAdminPage() {
     fetchAboutData();
   }, [fetchAboutData]);
 
+  const fetchAboutImages = useCallback(async () => {
+    setLoadingImages(true);
+    try {
+      const res = await fetch(`/api/upload/about?t=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) {
+        setAboutImages([]);
+        return;
+      }
+      const data = (await res.json()) as { items?: Array<{ url: string }> };
+      setAboutImages((data.items || []).map((it) => ({ url: it.url })));
+    } catch (e) {
+      console.error('Error fetching about images:', e);
+      setAboutImages([]);
+    } finally {
+      setLoadingImages(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAboutImages();
+  }, [fetchAboutImages]);
+
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -58,8 +86,8 @@ export default function AboutAdminPage() {
       const formData = new FormData();
       formData.append('file', file);
 
-      // Upload to gallery collection (we can use any collection, or create a generic one)
-      const response = await fetch(`/api/upload/gallery?filename=${encodeURIComponent(file.name)}`, {
+      // Upload to a dedicated About collection (keeps profile/about images out of the tattoo gallery).
+      const response = await fetch(`/api/upload/about?filename=${encodeURIComponent(file.name)}`, {
         method: 'POST',
         body: file,
       });
@@ -68,6 +96,7 @@ export default function AboutAdminPage() {
         const data = await response.json();
         setUploadedImageUrl(data.url);
         setImageAlt(file.name.replace(/\.[^/.]+$/, '')); // Use filename as default alt text
+        fetchAboutImages();
       } else {
         const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
         alert(`Failed to upload image: ${errorData.error || 'Unknown error'}`);
@@ -225,9 +254,74 @@ export default function AboutAdminPage() {
           {/* Image Upload Section */}
           <div className="border rounded-lg p-4 bg-gray-50">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Upload Image
+              Profile Images (stored separately from Gallery)
             </label>
             <div className="space-y-3">
+              {/* Existing profile/about images */}
+              <div className="border rounded-lg bg-white p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-sm font-medium text-gray-700">Uploaded profile images</div>
+                  <button
+                    type="button"
+                    onClick={fetchAboutImages}
+                    className="text-xs text-[#7B894C] hover:underline"
+                  >
+                    Refresh
+                  </button>
+                </div>
+                {loadingImages ? (
+                  <div className="text-xs text-gray-500">Loading images…</div>
+                ) : aboutImages.length === 0 ? (
+                  <div className="text-xs text-gray-500">No profile images uploaded yet.</div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {aboutImages.map((img) => (
+                      <div key={img.url} className="border rounded-lg p-2">
+                        <img src={img.url} alt="Profile" className="w-full h-32 object-cover rounded" />
+                        <div className="mt-2 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUploadedImageUrl(img.url);
+                              setImageAlt('');
+                            }}
+                            className="flex-1 text-[11px] bg-[#7B894C] text-white px-2 py-1 rounded hover:bg-[#6A7A3F] transition-colors"
+                            title="Use this image in the editor below"
+                          >
+                            Use
+                          </button>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const confirmed = window.confirm('Delete this profile image?');
+                              if (!confirmed) return;
+                              const res = await fetch(`/api/upload/about?url=${encodeURIComponent(img.url)}`, { method: 'DELETE' });
+                              if (!res.ok) {
+                                alert('Failed to delete image.');
+                                return;
+                              }
+                              if (uploadedImageUrl === img.url) {
+                                setUploadedImageUrl(null);
+                                setImageAlt('');
+                              }
+                              fetchAboutImages();
+                            }}
+                            className="text-[11px] bg-white text-red-700 border border-red-300 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                            title="Delete this image"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="text-xs text-gray-600">
+                Uploading here keeps profile/about images out of the tattoo Gallery.
+              </div>
+
               <div className="flex gap-2">
                 <input
                   type="file"

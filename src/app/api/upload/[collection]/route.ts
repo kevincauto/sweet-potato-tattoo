@@ -10,7 +10,7 @@ import { revalidatePath } from 'next/cache';
 // ───────────────────────── POST /api/upload/:collection
 export async function POST(request: Request, { params }: any) {
   const { collection } = await params;
-  const allowed = ['flash', 'gallery'];
+  const allowed = ['flash', 'gallery', 'about'];
   if (!allowed.includes(collection)) {
     return NextResponse.json({ error: 'Invalid collection' }, { status: 400 });
   }
@@ -86,7 +86,7 @@ export async function POST(request: Request, { params }: any) {
 // ───────────────────────── GET /api/upload/:collection
 export async function GET(_: Request, { params }: any) {
   const { collection } = await params;
-  const allowed = ['flash', 'gallery'];
+  const allowed = ['flash', 'gallery', 'about'];
   if (!allowed.includes(collection)) return NextResponse.json({ blobs: [] });
 
   let urls: string[] = await kv.lrange(`${collection}-images`, 0, -1);
@@ -388,7 +388,7 @@ export async function PUT(request: Request, { params }: any) {
 // ───────────────────────── PATCH /api/upload/:collection (for reordering)
 export async function PATCH(request: Request, { params }: any) {
   const { collection } = await params;
-  const allowed = ['flash', 'gallery'];
+  const allowed = ['flash', 'gallery', 'about'];
   if (!allowed.includes(collection)) {
     return NextResponse.json({ error: 'Invalid collection' }, { status: 400 });
   }
@@ -437,7 +437,7 @@ export async function PATCH(request: Request, { params }: any) {
 // ───────────────────────── DELETE /api/upload/:collection
 export async function DELETE(request: Request, { params }: any) {
   const { collection } = await params;
-  const allowed = ['flash', 'gallery'];
+  const allowed = ['flash', 'gallery', 'about'];
   if (!allowed.includes(collection)) {
     return NextResponse.json({ error: 'Invalid collection' }, { status: 400 });
   }
