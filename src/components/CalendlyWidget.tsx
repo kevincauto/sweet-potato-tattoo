@@ -9,30 +9,33 @@ type CalendlyCalendar = {
   url: string;
 };
 
+const CALENDLY_CLEANUP_PARAMS =
+  'hide_event_type_details=1&hide_event_type_selection=1&hide_invitee_details=1&hide_invitee_list_tabs=1&hide_gdpr_banner=1&background_color=ffffff&text_color=414141&primary_color=7b894c';
+
 const DEFAULT_CALENDARS: CalendlyCalendar[] = [
   {
     id: 'may-1-13',
     title: 'Click Here to Book May 1st - May 13th',
     location: 'Tattoo Mahal (Philadelphia, PA)',
-    url: 'https://calendly.com/sweetpotatotattoo/tattoo-mahal-pt-i',
+    url: `https://calendly.com/sweetpotatotattoo/tattoo-mahal-pt-i?${CALENDLY_CLEANUP_PARAMS}`,
   },
   {
     id: 'may-14-16',
     title: 'Click Here to Book May 14th - May 16th',
     location: 'Dekaying Tattoos (Morton, PA)',
-    url: 'https://calendly.com/sweetpotatotattoo/dekaying-tattoo-pt-i',
+    url: `https://calendly.com/sweetpotatotattoo/dekaying-tattoo-pt-i?${CALENDLY_CLEANUP_PARAMS}`,
   },
   {
     id: 'may-25-29',
     title: 'Click Here to Book May 25th - May 29th',
     location: 'Dekaying Tattoos (Morton, PA)',
-    url: 'https://calendly.com/sweetpotatotattoo/dekaying-tattoo-pt-i-clone',
+    url: `https://calendly.com/sweetpotatotattoo/dekaying-tattoo-pt-i-clone?${CALENDLY_CLEANUP_PARAMS}`,
   },
   {
     id: 'may-30-june-19',
     title: 'Click Here to Book May 30th - June 19th',
     location: 'Tattoo Mahal (Philadelphia, PA)',
-    url: 'https://calendly.com/sweetpotatotattoo/tattoo-mahal-pt-i-clone',
+    url: `https://calendly.com/sweetpotatotattoo/tattoo-mahal-pt-i-clone?${CALENDLY_CLEANUP_PARAMS}`,
   },
 ];
 
