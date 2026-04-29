@@ -5,32 +5,34 @@ import { useEffect, useRef, useState } from 'react';
 type CalendlyCalendar = {
   id: string;
   title: string;
+  location?: string;
   url: string;
 };
 
-const DEFAULT_CALENDLY_URL =
-  'https://calendly.com/sweetpotatotattoo/tattoo-appointment?hide_event_type_details=1&hide_event_type_selection=1&hide_invitee_details=1&hide_invitee_list_tabs=1&hide_gdpr_banner=1&background_color=ffffff&text_color=414141&primary_color=7b894c';
-
 const DEFAULT_CALENDARS: CalendlyCalendar[] = [
   {
-    id: 'april',
-    title: 'Click Here to Book in April',
-    url: DEFAULT_CALENDLY_URL,
+    id: 'may-1-13',
+    title: 'Click Here to Book May 1st - May 13th',
+    location: 'Tattoo Mahal (Philadelphia, PA)',
+    url: 'https://calendly.com/sweetpotatotattoo/tattoo-mahal-pt-i',
   },
   {
-    id: 'may-1-15',
-    title: 'Click Here to Book May 1st -May 15th',
-    url: DEFAULT_CALENDLY_URL,
+    id: 'may-14-16',
+    title: 'Click Here to Book May 14th - May 16th',
+    location: 'Dekaying Tattoos (Morton, PA)',
+    url: 'https://calendly.com/sweetpotatotattoo/dekaying-tattoo-pt-i',
   },
   {
-    id: 'may-16-31',
-    title: 'Click Here to Book May 16th-31st',
-    url: DEFAULT_CALENDLY_URL,
+    id: 'may-25-29',
+    title: 'Click Here to Book May 25th - May 29th',
+    location: 'Dekaying Tattoos (Morton, PA)',
+    url: 'https://calendly.com/sweetpotatotattoo/dekaying-tattoo-pt-i-clone',
   },
   {
-    id: 'june',
-    title: 'Click Here to Book in June',
-    url: DEFAULT_CALENDLY_URL,
+    id: 'may-30-june-19',
+    title: 'Click Here to Book May 30th - June 19th',
+    location: 'Tattoo Mahal (Philadelphia, PA)',
+    url: 'https://calendly.com/sweetpotatotattoo/tattoo-mahal-pt-i-clone',
   },
 ];
 
@@ -146,7 +148,14 @@ export default function CalendlyWidget({
                 isOpen ? 'rounded-t-xl' : 'rounded-xl'
               }`}
             >
-              <span>{calendar.title}</span>
+              <span>
+                <span className="block">{calendar.title}</span>
+                {calendar.location && (
+                  <span className="mt-1 block text-base font-normal text-white/90">
+                    {calendar.location}
+                  </span>
+                )}
+              </span>
               <span
                 aria-hidden="true"
                 className={`text-2xl leading-none transition-transform ${
