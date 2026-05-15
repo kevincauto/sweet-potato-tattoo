@@ -14,18 +14,6 @@ const CALENDLY_CLEANUP_PARAMS =
 
 const DEFAULT_CALENDARS: CalendlyCalendar[] = [
   {
-    id: 'may-14-16',
-    title: 'Click Here to Book May 14th - May 16th',
-    location: 'Dekaying Tattoos (Morton, PA)',
-    url: `https://calendly.com/sweetpotatotattoo/dekaying-tattoo-pt-i?${CALENDLY_CLEANUP_PARAMS}`,
-  },
-  {
-    id: 'may-25-29',
-    title: 'Click Here to Book May 25th - May 29th',
-    location: 'Dekaying Tattoos (Morton, PA)',
-    url: `https://calendly.com/sweetpotatotattoo/dekaying-tattoo-pt-i-clone?${CALENDLY_CLEANUP_PARAMS}`,
-  },
-  {
     id: 'may-30-june-19',
     title: 'Click Here to Book May 30th - June 19th',
     location: 'Tattoo Mahal (Philadelphia, PA)',
