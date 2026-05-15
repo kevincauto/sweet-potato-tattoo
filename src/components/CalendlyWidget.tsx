@@ -14,12 +14,6 @@ const CALENDLY_CLEANUP_PARAMS =
 
 const DEFAULT_CALENDARS: CalendlyCalendar[] = [
   {
-    id: 'may-1-13',
-    title: 'Click Here to Book May 1st - May 13th',
-    location: 'Tattoo Mahal (Philadelphia, PA)',
-    url: `https://calendly.com/sweetpotatotattoo/tattoo-mahal-pt-i?${CALENDLY_CLEANUP_PARAMS}`,
-  },
-  {
     id: 'may-14-16',
     title: 'Click Here to Book May 14th - May 16th',
     location: 'Dekaying Tattoos (Morton, PA)',
