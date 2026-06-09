@@ -19,6 +19,12 @@ const DEFAULT_CALENDARS: CalendlyCalendar[] = [
     location: 'Tattoo Mahal (Philadelphia, PA)',
     url: `https://calendly.com/sweetpotatotattoo/tattoo-mahal-pt-i-clone?${CALENDLY_CLEANUP_PARAMS}`,
   },
+  {
+    id: 'july',
+    title: 'Click Here to Book July',
+    location: 'DeKaying Tattoos (Morton, PA)',
+    url: `https://calendly.com/sweetpotatotattoo/tattoo-appt-dekaying-ii-clone?${CALENDLY_CLEANUP_PARAMS}`,
+  },
 ];
 
 function CalendlyInlineEmbed({
