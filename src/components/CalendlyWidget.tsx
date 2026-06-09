@@ -21,7 +21,7 @@ const DEFAULT_CALENDARS: CalendlyCalendar[] = [
   },
   {
     id: 'july',
-    title: 'Click Here to Book July',
+    title: 'Click Here to Book June 29th - July 25th',
     location: 'DeKaying Tattoos (Morton, PA)',
     url: `https://calendly.com/sweetpotatotattoo/tattoo-appt-dekaying-ii-clone?${CALENDLY_CLEANUP_PARAMS}`,
   },
